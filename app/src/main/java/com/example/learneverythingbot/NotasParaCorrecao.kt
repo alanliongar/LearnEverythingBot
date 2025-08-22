@@ -22,13 +22,16 @@ Dia 22/08/2025
 Próximos passos:
 3 - Juliana encerrar a tela de chat e a navegação do compose (Força, Juuu);
 4 - Oscar fez bastante coisa para o nosso MVP, a parte dele está ok por enquanto;
-5 - Alan ficou responsável pela criação do viewmodel, mas ficou acordado que faremos isso em equipe, pois a Juliana e Oscar querem acompanhar o processo (deixa co pai)
+5 - Alan ficou responsável pela criação do viewmodel, mas ficou acordado que faremos isso em equipe,
+    pois a Juliana e Oscar querem acompanhar o processo (deixa co pai)
+6 - Juliana sugeriu a organização em pacotes de um modo mais simples (seguindo mais clean mesmo).
+    -Alan se propôs a fazê-lo, e revisar com a Juliana mais tarde.
 
 Obs importantes:
-6 - O André Morientes se apresentou, e ficou ciente de onde estamos no projeto (board trello + github).
+7 - O André Morientes se apresentou, e ficou ciente de onde estamos no projeto (board trello + github).
     Ele vai acompanhar nossa finalização do MVP sem colocar a mão na massa agora. Trabalhará na melhoria e
     implementação de novas funcionalidades a partir de segunda-feira, dia 25/08/2025.
-7 - Definiremos um novo horário pra daily.
+8 - Definiremos um novo horário pra daily.
 */
 
 
