@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!-- Cor antig
 <resources>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
@@ -7,4 +9,46 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+</resources>
+-->
+
+<resources>
+    <!-- Colores primarios -->
+    <color name="primary">#10B981</color>
+    <color name="primary_dark">#0CA678</color>
+    <color name="primary_light">#38C999</color>
+
+    <!-- Colores secundarios -->
+    <color name="secondary">#8B5CF6</color>
+    <color name="secondary_dark">#7C3AED</color>
+    <color name="secondary_light">#9B76F7</color>
+
+    <!-- Fondos -->
+    <color name="background_light">#FFFFFF</color>
+    <color name="background_dark">#0F172A</color>
+
+    <!-- Textos -->
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#374151</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_on_secondary">#FFFFFF</color>
+
+    <!-- Superficies/Contenedores -->
+    <color name="surface_light">#FFFFFF</color>
+    <color name="surface_dark">#1E293B</color>
+
+    <!-- Bordes -->
+    <color name="border_light">#E5E7EB</color>
+    <color name="border_dark">#334155</color>
+
+    <!-- Estados -->
+    <color name="error">#EF4444</color>
+    <color name="success">#10B981</color>
+    <color name="warning">#F59E0B</color>
+
+    <!-- Bolhas de chat -->
+    <color name="chat_user_bubble">#10B981</color>
+    <color name="chat_user_text">#FFFFFF</color>
+    <color name="chat_mentor_bubble">#F3F4F6</color>
+    <color name="chat_mentor_text">#111827</color>
 </resources>
