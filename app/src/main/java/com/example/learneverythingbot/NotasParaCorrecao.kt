@@ -14,7 +14,9 @@ Timeline estimada para a entrega da funcionalidade simples: 1 dia. data limite: 
 Dia 21/08/2025
 1 - Realinhamento simples entre Alan e Oscar, a respeito da tela e pré-brainstorm sobre as proximas funcionalidades.
 2 - Oscar segue interessado em escrever testes unitários.
+*/
 
+/*
 Dia 22/08/2025
 1 - Alan encerrou a integração com a openAi
 2 - Oscar encerrou a criação da primeira tela
@@ -33,5 +35,3 @@ Obs importantes:
     implementação de novas funcionalidades a partir de segunda-feira, dia 25/08/2025.
 8 - Definiremos um novo horário pra daily.
 */
-
-
