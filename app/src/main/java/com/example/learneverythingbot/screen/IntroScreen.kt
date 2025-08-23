@@ -26,7 +26,7 @@ fun IntroScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0F172A)), // Color de fondo oscuro
+            .background(Color(0xFF0F172A)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -37,7 +37,7 @@ fun IntroScreen() {
         ) {
             IntroImagen()
             Spacer(modifier = Modifier.height(24.dp))
-            WelcomeTexto()
+            WelcomeText()
         }
     }
 }
@@ -69,7 +69,7 @@ fun IntroImagen() {
 }
 
 @Composable
-fun WelcomeTexto() {
+fun WelcomeText() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()

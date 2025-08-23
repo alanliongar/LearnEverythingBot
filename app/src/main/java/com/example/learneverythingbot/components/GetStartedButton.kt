@@ -29,15 +29,7 @@ fun GetStartedButton(
 
 
     Button(
-        onClick = {
-
-            val intent = Intent(context, ChatActivity::class.java)
-            context.startActivity(intent)
-
-
-
-            onClickNavigate()
-        },
+        onClick = onClickNavigate,
         colors = ButtonDefaults.buttonColors(
             containerColor = colorResource(id = R.color.primary)
         ),

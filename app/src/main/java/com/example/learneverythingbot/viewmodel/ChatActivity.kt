@@ -7,12 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.learneverythingbot.components.MessageInput
+import com.example.learneverythingbot.components.MessageInputBar
+import com.example.learneverythingbot.screen.ChatScreen
 import com.example.learneverythingbot.ui.theme.LearnEverythingBotTheme
 
 class ChatActivity : ComponentActivity() {
@@ -20,17 +22,20 @@ class ChatActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            MaterialTheme {
+                ChatScreen(subject = "Kotlin")
+            }
             LearnEverythingBotTheme {
-
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        MessageInput(
+                        MessageInputBar(
                             onMessageSend = { message ->
                             },
                             modifier = Modifier.padding(innerPadding),
-                        ) }
+                        )
+                    }
                 }
             }
         }
