@@ -35,3 +35,15 @@ Obs importantes:
     implementação de novas funcionalidades a partir de segunda-feira, dia 25/08/2025.
 8 - Definiremos um novo horário pra daily.
 */
+
+/*
+Dias 23/08/2025 e 24/08/2025 - Sem atuação direta no código (final de semana)
+1 - Juliana saiu da equipe no sábado a tarde. Ela completou a tela de chat (valeuu)
+*/
+
+/*
+Dia 25/08/2025 - Daily - Alan e André:
+1 - André ficou responsável pela implementação do room database e histórico do usuário
+2 - Alan assumiu a tarefa pendente da Juliana (Navegação)
+3 - Oscar ficou responsável por incluir o Quiz no app
+*/

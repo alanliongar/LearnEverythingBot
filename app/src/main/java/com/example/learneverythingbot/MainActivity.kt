@@ -18,7 +18,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LearnEverythingBotTheme {
-
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
