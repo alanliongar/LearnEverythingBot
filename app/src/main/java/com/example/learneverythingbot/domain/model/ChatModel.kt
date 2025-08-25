@@ -1,4 +1,4 @@
-package com.example.learneverythingbot.model
+package com.example.learneverythingbot.domain.model
 
 data class ChatMessage(
     val role: Role,
