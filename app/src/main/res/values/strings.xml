@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">LearnEverythingBot</string>
+    <string name="app_name">Learn Everything Bot</string>
+    <string name="Bemvindo">Bem-vindo!</string>
+    <string name="mensaje_de_bienvenida">Descubra um novo mundo de aprendizado com inteligência artificial</string>
+    <string name="comenzar">Começar</string>
+    <string name="messageinput">Sou o Learn Everything Bot! Escreve aqui a tua pergunta ou tema que queiras aprender...</string>
+    <string name="title_activity_chat">ChatActivity</string>
+    <string name="title_activity_main2">MainActivity2</string>
 </resources>
