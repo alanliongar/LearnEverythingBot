@@ -1,10 +1,9 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
 package com.example.learneverythingbot.screen
 
+import androidx.compose.foundation.lazy.LazyColumn
 import android.R.attr.value
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,9 +25,10 @@ import com.example.learneverythingbot.model.ChatMessage
 import com.example.learneverythingbot.model.Role
 import com.example.learneverythingbot.ui.theme.Purple40
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    subject: String,                   
+    subject: String,
     onMenuClick: () -> Unit = {},
 ) {
     var input by rememberSaveable { mutableStateOf("") }
@@ -121,7 +121,6 @@ private fun AssistantText(text: String) {
         }
     }
 }
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

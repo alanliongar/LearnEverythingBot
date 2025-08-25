@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.learneverythingbot.components.MessageInputBar
 import com.example.learneverythingbot.screen.ChatScreen
+
 import com.example.learneverythingbot.ui.theme.LearnEverythingBotTheme
 
 class ChatActivity : ComponentActivity() {
