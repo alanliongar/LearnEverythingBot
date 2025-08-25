@@ -1,101 +1,103 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.learneverythingbot.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.learneverythingbot.R
-
+import com.example.learneverythingbot.ui.theme.Purple40
 
 private fun handleSendMessage(
     message: String,
     onMessageSend: (String) -> Unit,
     onMessageCleared: (String) -> Unit
 ) {
-    if (message.isNotEmpty()) {
-        onMessageSend(message)
-        onMessageCleared(message)
+    val trimmed = message.trim()
+    if (trimmed.isNotEmpty()) {
+        onMessageSend(trimmed)
+        onMessageCleared(trimmed)
     }
 }
 
 @Composable
-fun MessageInput(
+fun MessageInputBar(
     onMessageSend: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    placeholder: String = stringResource(id = com.example.learneverythingbot.R.string.hint_message)
 ) {
     var message by remember { mutableStateOf("") }
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        modifier = modifier,
+        shadowElevation = 8.dp
     ) {
-        OutlinedTextField(
-            modifier = Modifier.weight(1f),
-            value = message,
-            onValueChange = { message = it },
-            placeholder = { Text(text = stringResource(id = R.string.messageinput)) },
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
-            keyboardActions = KeyboardActions(
-                onSend = {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = message,
+                onValueChange = { message = it },
+                enabled = enabled,
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 52.dp),
+                placeholder = { Text(placeholder) },
+                shape = RoundedCornerShape(14.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        handleSendMessage(
+                            message,
+                            onMessageSend = { newMessage -> onMessageSend(newMessage) },
+                            onMessageCleared = { message = "" }
+                        )
+                    }
+                )
+            )
+            Spacer(Modifier.width(8.dp))
+            FilledIconButton(
+                onClick = {
                     handleSendMessage(
                         message,
-                        onMessageSend = { newMessage ->
-                            onMessageSend(newMessage)
-                        },
-                        onMessageCleared = {
-                            message = ""
-                        }
+                        onMessageSend = { newMessage -> onMessageSend(newMessage) },
+                        onMessageCleared = { message = "" }
                     )
-                }
-            )
-        )
-        IconButton(
-            onClick = {
-                handleSendMessage(message, onMessageSend) { newMessage ->
-                    message = newMessage
-                }
-            },
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .size(50.dp)
-                .background(
-                    color = colorResource(id = R.color.primary),
-                    shape = CircleShape
+                },
+                enabled = enabled,
+                colors = IconButtonDefaults.filledIconButtonColors(containerColor = Purple40),
+                modifier = Modifier.size(52.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = null,
+                    tint = Color.White
                 )
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Send,
-                contentDescription = "Enviar",
-                tint = colorResource(id = R.color.text_secondary),
-                modifier = Modifier.size(28.dp)
-            )
+            }
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun MessageInputPreview() {
-    MessageInput(onMessageSend = {  })
+private fun MessageInputBarPreview() {
+    MaterialTheme {
+        MessageInputBar(onMessageSend = { /* no-op */ })
+    }
 }
