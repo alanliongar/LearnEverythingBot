@@ -1,3 +1,13 @@
 <resources>
-    <string name="app_name">LearnEverythingBot</string>
+    <string name="app_name">Learn Everything Bot</string>
+    <string name="Bemvindo">Bem-vindo!</string>
+    <string name="mensaje_de_bienvenida">Descubra um novo mundo de aprendizado com inteligência artificial</string>
+    <string name="comenzar">Começar</string>
+    <string name="message_input">Sou o Lene seu assistente! Escreve aqui sua pergunta ou tema que gostaria de aprender...</string>
+    <string name="title_studies_about">Estudos sobre %1$s</string>
+    <string name="initial_prompt">O que deseja aprender hoje?</string>
+    <string name="hint_message">Mensagem</string>
+    <string name="send_label">Enviar</string>
+    <string name="title_activity_chat">Chat Screen</string>
+    <string name="title_activity_main2">MainActivity2</string>
 </resources>
