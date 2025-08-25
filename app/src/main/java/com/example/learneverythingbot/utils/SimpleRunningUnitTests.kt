@@ -1,4 +1,9 @@
-package com.example.learneverythingbot
+package com.example.learneverythingbot.utils
+
+import com.example.learneverythingbot.data.remote.LearningTopicsRemoteDataSource
+import com.example.learneverythingbot.data.remote.OpenAiService
+import com.example.learneverythingbot.data.remote.RetrofitClient
+import kotlin.system.exitProcess
 
 suspend fun main() {
     try {
@@ -14,6 +19,6 @@ suspend fun main() {
     } finally {
         RetrofitClient.cancelAll()
         RetrofitClient.shutdown()
-        kotlin.system.exitProcess(0)
+        exitProcess(0)
     }
 }

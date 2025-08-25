@@ -1,7 +1,7 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
-package com.example.learneverythingbot.screen
 
-import android.R.attr.value
+package com.example.learneverythingbot.presentation.screen
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -17,22 +16,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.learneverythingbot.LearningTopicsRemoteDataSource
-import com.example.learneverythingbot.OpenAiService
-import com.example.learneverythingbot.RetrofitClient
-import com.example.learneverythingbot.components.MessageInputBar
-import com.example.learneverythingbot.model.ChatMessage
-import com.example.learneverythingbot.model.Role
+import com.example.learneverythingbot.data.remote.LearningTopicsRemoteDataSource
+import com.example.learneverythingbot.data.remote.OpenAiService
+import com.example.learneverythingbot.R
+import com.example.learneverythingbot.data.remote.RetrofitClient
+import com.example.learneverythingbot.utils.components.MessageInputBar
+import com.example.learneverythingbot.data.model.ChatMessage
+import com.example.learneverythingbot.data.model.Role
 import com.example.learneverythingbot.ui.theme.Purple40
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @Composable
 fun ChatScreen(
@@ -50,7 +47,7 @@ fun ChatScreen(
                 },
                 title = {
                     Text(
-                        text = stringResource(id= com.example.learneverythingbot.R.string.title_activity_chat, "formatArgs"),
+                        text = stringResource(id= R.string.title_activity_chat, "formatArgs"),
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -78,7 +75,7 @@ fun ChatScreen(
         ) {
             if (messages.isEmpty()) {
                 Text(
-                    text = stringResource(id= com.example.learneverythingbot.R.string.initial_prompt),
+                    text = stringResource(id= R.string.initial_prompt),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(start = 16.dp, end = 16.dp),

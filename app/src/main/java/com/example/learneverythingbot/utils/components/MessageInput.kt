@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.learneverythingbot.components
+package com.example.learneverythingbot.utils.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.learneverythingbot.R
 import com.example.learneverythingbot.ui.theme.Purple40
 
 private fun handleSendMessage(
@@ -36,7 +37,7 @@ fun MessageInputBar(
     onMessageSend: (String) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    placeholder: String = stringResource(id = com.example.learneverythingbot.R.string.hint_message)
+    placeholder: String = stringResource(id = R.string.hint_message)
 ) {
     var message by remember { mutableStateOf("") }
 

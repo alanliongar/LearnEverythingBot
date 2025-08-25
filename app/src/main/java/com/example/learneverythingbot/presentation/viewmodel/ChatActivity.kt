@@ -1,4 +1,4 @@
-package com.example.learneverythingbot.viewmodel
+package com.example.learneverythingbot.presentation.viewmodel
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,35 +7,43 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.learneverythingbot.LearnEverythingApp
-import com.example.learneverythingbot.screen.IntroScreen
+import com.example.learneverythingbot.utils.components.MessageInputBar
+import com.example.learneverythingbot.presentation.screen.ChatScreen
 import com.example.learneverythingbot.ui.theme.LearnEverythingBotTheme
 
-class MainActivity : ComponentActivity() {
+class ChatActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            MaterialTheme {
+                ChatScreen()
+            }
             LearnEverythingBotTheme {
-
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    LearnEverythingApp(innerPadding = innerPadding)
+                    Box(modifier = Modifier.padding(innerPadding)) {
+                        MessageInputBar(
+                            onMessageSend = { message ->
+                            },
+                            modifier = Modifier.padding(innerPadding),
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun ChatPage(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello $name!",
         modifier = modifier
@@ -44,8 +52,8 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun GreetingPreview2() {
     LearnEverythingBotTheme {
-        Greeting("Android")
+        ChatPage("Android")
     }
 }

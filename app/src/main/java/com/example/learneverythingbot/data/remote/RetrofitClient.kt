@@ -1,5 +1,6 @@
-package com.example.learneverythingbot
+package com.example.learneverythingbot.data.remote
 
+import com.example.learneverythingbot.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import retrofit2.Retrofit

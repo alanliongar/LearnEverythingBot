@@ -1,4 +1,4 @@
-package com.example.learneverythingbot.screen
+package com.example.learneverythingbot.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.learneverythingbot.R
-import com.example.learneverythingbot.components.GetStartedButton
+import com.example.learneverythingbot.utils.components.GetStartedButton
 
 @Composable
 fun IntroScreen(innerPadding: PaddingValues, navController: NavHostController) {

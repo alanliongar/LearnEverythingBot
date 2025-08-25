@@ -1,4 +1,4 @@
-package com.example.learneverythingbot
+package com.example.learneverythingbot.data.model
 
 data class OpenAiRequest(
     val model: String = "gpt-3.5-turbo",

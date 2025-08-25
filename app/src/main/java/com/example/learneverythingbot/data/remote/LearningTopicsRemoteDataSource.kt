@@ -1,4 +1,7 @@
-package com.example.learneverythingbot
+﻿package com.example.learneverythingbot.data.remote
+
+import com.example.learneverythingbot.data.model.Message
+import com.example.learneverythingbot.data.model.OpenAiRequest
 
 class LearningTopicsRemoteDataSource(
     private val openAiService: OpenAiService
