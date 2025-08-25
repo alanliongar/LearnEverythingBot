@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.learneverythingbot.R
-import com.example.learneverythingbot.ui.theme.Purple40
+import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
 
 private fun handleSendMessage(
     message: String,

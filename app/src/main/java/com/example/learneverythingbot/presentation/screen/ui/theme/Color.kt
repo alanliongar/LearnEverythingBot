@@ -1,4 +1,4 @@
-package com.example.learneverythingbot.ui.theme
+package com.example.learneverythingbot.presentation.screen.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

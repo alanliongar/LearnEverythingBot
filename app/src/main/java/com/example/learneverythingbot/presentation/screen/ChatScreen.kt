@@ -26,7 +26,7 @@ import com.example.learneverythingbot.data.remote.RetrofitClient
 import com.example.learneverythingbot.utils.components.MessageInputBar
 import com.example.learneverythingbot.data.model.ChatMessage
 import com.example.learneverythingbot.data.model.Role
-import com.example.learneverythingbot.ui.theme.Purple40
+import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

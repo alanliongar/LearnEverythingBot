@@ -1,6 +1,5 @@
-package com.example.learneverythingbot.ui.theme
+package com.example.learneverythingbot.presentation.screen.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
