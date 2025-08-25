@@ -45,7 +45,7 @@ fun ChatScreen(
 
     var messages by remember { mutableStateOf<List<ChatMessage>>(emptyList()) }
 
-    // Efeito para inicializar o assunto
+
     LaunchedEffect(subject) {
         if (subject.isNotEmpty()) {
 
