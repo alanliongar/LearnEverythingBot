@@ -97,7 +97,8 @@ fun PreviewChatHistoryItem() {
                 timestamp = System.currentTimeMillis()
             ),
             onItemClick = {},
-            onDeleteClick = {}
+            onDeleteClick = {},
+
         )
     }
 }
@@ -114,7 +115,7 @@ fun PreviewChatHistoryItemLongText() {
                 timestamp = System.currentTimeMillis() - 86400000
             ),
             onItemClick = {},
-            onDeleteClick = {}
+            onDeleteClick = {},
         )
     }
 }

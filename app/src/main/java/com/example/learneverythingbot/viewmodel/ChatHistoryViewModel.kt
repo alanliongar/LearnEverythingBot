@@ -9,47 +9,59 @@ import com.example.learneverythingbot.domain.model.ChatHistory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class ChatHistoryViewModel(
-    application: Application,
-    var repository: ChatRepository
-) :
-    AndroidViewModel(application) {
+class ChatHistoryViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _chatHistory = MutableStateFlow<List<ChatHistory>>(emptyList())
-    val chatHistory: MutableStateFlow<List<ChatHistory>> = _chatHistory
+    private val repository: ChatRepository
+    val chatHistory = MutableStateFlow<List<ChatHistory>>(emptyList())
+    val drawerVisible = MutableStateFlow(false)
 
     init {
-        val database= AppDatabase.getInstance(application)
-        repository = ChatRepository(database.chatHistoryDao())
+        val database = AppDatabase.getInstance(application)
+        val dao = database.chatHistoryDao()
+        repository = ChatRepository(dao)
+        loadChatHistory()
+    }
 
+    private fun loadChatHistory() {
         viewModelScope.launch {
             repository.allchats.collect { chats ->
-                _chatHistory.value = chats
+                chatHistory.value = chats
             }
         }
-
     }
 
-
-    fun saveChat(userMessage: String, aiResponse: String) {
-        viewModelScope.launch {
-            val chatHistory = ChatHistory(userMessage = userMessage, aiResponse = aiResponse)
-            repository.insertChat(chatHistory)
-
-        }
+    fun toggleDrawer() {
+        drawerVisible.value = !drawerVisible.value
     }
 
-    fun deleteChat(id: Int){
+    fun showDrawer() {
+        drawerVisible.value = true
+    }
+
+    fun hideDrawer() {
+        drawerVisible.value = false
+    }
+
+    fun deleteChat(id: Int) {
         viewModelScope.launch {
             repository.deleteChat(id)
         }
     }
 
-    fun deleteAllChat(){
+    fun deleteAllChat() {
         viewModelScope.launch {
             repository.deleteAllChat()
-
         }
     }
 
+    fun saveChat(userMessage: String, aiResponse: String) {
+        viewModelScope.launch {
+            val chatHistory = ChatHistory(
+                userMessage = userMessage,
+                aiResponse = aiResponse,
+                timestamp = System.currentTimeMillis()
+            )
+            repository.insertChat(chatHistory)
+        }
+    }
 }

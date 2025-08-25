@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.learneverythingbot.screen.ChatScreen
 import com.example.learneverythingbot.screen.IntroScreen
 import com.example.learneverythingbot.ui.theme.LearnEverythingBotTheme
 
@@ -25,9 +26,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)) {
-                        IntroScreen()
-                    }
+                    ChatScreen("Kotlin", modifier = Modifier.padding(innerPadding))
                 }
             }
         }
