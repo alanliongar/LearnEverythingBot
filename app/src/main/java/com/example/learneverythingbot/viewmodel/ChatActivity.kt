@@ -23,7 +23,7 @@ class ChatActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MaterialTheme {
-                ChatScreen(subject = "Kotlin")
+                ChatScreen()
             }
             LearnEverythingBotTheme {
                 Scaffold(

@@ -18,28 +18,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.learneverythingbot.R
 import com.example.learneverythingbot.components.GetStartedButton
 
 @Composable
-fun IntroScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF0F172A)),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+fun IntroScreen(innerPadding: PaddingValues, navController: NavHostController) {
+    Box(modifier = Modifier.padding(innerPadding)) {
+        Box(
             modifier = Modifier
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
+                .fillMaxSize()
+                .background(Color(0xFF0F172A)),
+            contentAlignment = Alignment.Center
         ) {
-            IntroImagen()
-            Spacer(modifier = Modifier.height(24.dp))
-            WelcomeText()
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                IntroImagen()
+                Spacer(modifier = Modifier.height(24.dp))
+                WelcomeText(navController = navController)
+            }
         }
     }
+
 }
 
 @Composable
@@ -69,7 +74,7 @@ fun IntroImagen() {
 }
 
 @Composable
-fun WelcomeText() {
+fun WelcomeText(navController: NavController) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
@@ -97,16 +102,15 @@ fun WelcomeText() {
 
         GetStartedButton(
             onClickNavigate = {
-                println("Botón de inicio presionado")
+                navController.navigate(route = "chatScreen")
             }
         )
     }
 }
 
 
-
 @Preview(showBackground = true)
 @Composable
 fun IntroScreenPreview() {
-    IntroScreen()
+    //IntroScreen()
 }

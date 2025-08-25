@@ -21,14 +21,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.learneverythingbot.LearningTopicsRemoteDataSource
+import com.example.learneverythingbot.OpenAiService
+import com.example.learneverythingbot.RetrofitClient
 import com.example.learneverythingbot.components.MessageInputBar
 import com.example.learneverythingbot.model.ChatMessage
 import com.example.learneverythingbot.model.Role
 import com.example.learneverythingbot.ui.theme.Purple40
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun ChatScreen(
-    subject: String,                   
+    //subject: String,
     onMenuClick: () -> Unit = {},
 ) {
     var input by rememberSaveable { mutableStateOf("") }
@@ -37,14 +45,14 @@ fun ChatScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id= com.example.learneverythingbot.R.string.title_activity_chat, subject),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                },
                 navigationIcon = {
                     IconButton(onClick = onMenuClick) { Icon(Icons.Default.Menu, null) }
+                },
+                title = {
+                    Text(
+                        text = stringResource(id= com.example.learneverythingbot.R.string.title_activity_chat, "formatArgs"),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
             )
         },
@@ -52,11 +60,13 @@ fun ChatScreen(
             MessageInputBar(
                 onMessageSend = { userText ->
                     messages += ChatMessage(Role.User, userText)
-
-                    messages += ChatMessage(
-                        Role.Assistant,
-                        "Resposta de exemplo para: \"$userText\""
-                    )
+                    GlobalScope.launch(Dispatchers.IO){
+                        val response = chatGpt(input = userText)
+                        messages += ChatMessage(
+                            Role.Assistant,
+                            response
+                        )
+                    }
                 }
             )
         }
@@ -94,6 +104,18 @@ fun ChatScreen(
     }
 }
 
+private suspend fun chatGpt(input: String): String {
+    val service = RetrofitClient.retrofitInstance.create(OpenAiService::class.java)
+    val remoteDataSource = LearningTopicsRemoteDataSource(service)
+    val result = remoteDataSource.learningTopicsResponse(input)
+
+    return if (result.isSuccess) {
+        result.getOrNull() ?: "Error: empty response from API"
+    } else {
+        "Erro: ${result.exceptionOrNull()?.message}"
+    }
+}
+
 @Composable
 private fun UserBubble(text: String) {
     Row(Modifier.fillMaxWidth()) {
@@ -127,7 +149,7 @@ private fun AssistantText(text: String) {
 @Composable
 fun ChatScreenPreviewEmpty() {
     MaterialTheme {
-        ChatScreen(subject = "Kotlin")
+        ChatScreen()
     }
 }
 
@@ -144,7 +166,7 @@ fun ChatScreenPreviewWithMessages() {
             var input by remember { mutableStateOf("") }
             val messages = remember { mutableStateListOf<ChatMessage>().apply { addAll(mockMessages) } }
 
-            ChatScreen(subject = "Kotlin")
+            ChatScreen()
         }
     }
 }

@@ -8,6 +8,6 @@
     <string name="initial_prompt">O que deseja aprender hoje?</string>
     <string name="hint_message">Mensagem</string>
     <string name="send_label">Enviar</string>
-    <string name="title_activity_chat">ChatActivity</string>
+    <string name="title_activity_chat">Chat Screen</string>
     <string name="title_activity_main2">MainActivity2</string>
 </resources>
