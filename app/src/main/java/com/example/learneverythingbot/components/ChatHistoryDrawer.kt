@@ -2,7 +2,6 @@ package com.example.learneverythingbot.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -10,15 +9,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -41,14 +36,18 @@ fun ChatHistoryDrawer(
     modifier: Modifier = Modifier
 ) {
 
+    val primaryColor = Color(0xFF10B981)
+    val surfaceColor = Color(0xFFFFFFFF)
+    val onSurfaceColor = Color(0xFF0F172A)
+    val onSurfaceVariantColor = Color(0xFF374151)
+    val outlineColor = Color(0xFFE5E7EB)
+    val errorColor = Color(0xFFEF4444)
 
     ModalDrawerSheet(
-        modifier = modifier.width(320.dp),
-        drawerContainerColor = MaterialTheme.colorScheme.surface,
-        drawerContentColor = MaterialTheme.colorScheme.onSurface,
-        drawerTonalElevation = 16.dp,
-        drawerShape = MaterialTheme.shapes.extraLarge
-
+        modifier = modifier.width(400.dp),
+        drawerContainerColor = onSurfaceColor,
+        drawerContentColor = surfaceColor,
+        drawerTonalElevation = 16.dp
     ) {
         Column(
             modifier = Modifier
@@ -57,23 +56,23 @@ fun ChatHistoryDrawer(
         ) {
             Text(
                 text = "Histórico de Conversas",
-                style = MaterialTheme.typography.titleLarge.copy(
+                style = androidx.compose.material3.MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.SemiBold
-                )
-
+                ),
+                color = surfaceColor
             )
 
             Divider(
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f),
+                color = outlineColor,
                 thickness = 1.dp,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, end = 16.dp)
             )
 
             if (allChats.isEmpty()) {
                 Text(
                     text = "Nenhuma conversa salva",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline,
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                    color = onSurfaceVariantColor,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 32.dp),
@@ -90,21 +89,22 @@ fun ChatHistoryDrawer(
                                 Column {
                                     Text(
                                         text = chat.userMessage,
-                                        style = MaterialTheme.typography.bodyLarge,
+                                        style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = surfaceColor
                                     )
                                     Text(
                                         text = chat.aiResponse,
-                                        style = MaterialTheme.typography.bodyMedium,
+                                        style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis)
-
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = surfaceColor
+                                    )
                                     Text(
                                         text = formatDate(chat.timestamp),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                        color = onSurfaceVariantColor,
                                         modifier = Modifier.padding(top = 2.dp)
                                     )
                                 }
@@ -114,35 +114,33 @@ fun ChatHistoryDrawer(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             colors = NavigationDrawerItemDefaults.colors(
                                 unselectedContainerColor = Color.Transparent,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            shape = MaterialTheme.shapes.medium
+                                unselectedTextColor = onSurfaceColor,
+                                unselectedIconColor = onSurfaceVariantColor
+                            )
                         )
                     }
                 }
-
             }
-            Divider(
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f),
-                thickness = 1.dp,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
 
+            Divider(
+                color = outlineColor,
+                thickness = 1.dp,
+                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, end = 16.dp)
+            )
 
             NavigationDrawerItem(
                 label = {
                     Text(
                         text = "Limpar histórico",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
+                        style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                        color = errorColor
                     )
                 },
                 icon = {
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = "Limpar histórico",
-                        tint = MaterialTheme.colorScheme.error
+                        tint = errorColor
                     )
                 },
                 selected = false,
@@ -150,13 +148,11 @@ fun ChatHistoryDrawer(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 colors = NavigationDrawerItemDefaults.colors(
                     unselectedContainerColor = Color.Transparent,
-                    unselectedTextColor = MaterialTheme.colorScheme.error,
-                    unselectedIconColor = MaterialTheme.colorScheme.error
-                ),
-                shape = MaterialTheme.shapes.medium
+                    unselectedTextColor = errorColor,
+                    unselectedIconColor = errorColor
+                )
             )
         }
-
     }
 }
 
@@ -165,4 +161,3 @@ fun formatDate(timestamp: Long): String {
     val format = SimpleDateFormat("dd/MM/yy HH:mm", Locale.getDefault())
     return format.format(date)
 }
-
