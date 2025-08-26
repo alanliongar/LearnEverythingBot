@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
-
+    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -89,10 +89,14 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.4")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.4")
 
-    //ROOM DATABASE
-    implementation ("androidx.room:room-runtime:2.6.0")
-    implementation ("androidx.room:room-ktx:2.6.0")
-   ksp ("androidx.room:room-compiler:2.6.0")
+
+    //Room database
+    val room_version = "2.6.1"
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    implementation("androidx.room:room-guava:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
 
     // VIEWMODEL
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
