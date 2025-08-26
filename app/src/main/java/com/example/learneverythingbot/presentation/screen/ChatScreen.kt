@@ -1,6 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
-package com.example.learneverythingbot.presentation.screen
+package com.example.learneverythingbot.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,105 +9,148 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.learneverythingbot.data.remote.LearningTopicsRemoteDataSource
-import com.example.learneverythingbot.data.remote.OpenAiService
-import com.example.learneverythingbot.R
-import com.example.learneverythingbot.data.remote.RetrofitClient
-import com.example.learneverythingbot.utils.components.MessageInputBar
-import com.example.learneverythingbot.data.model.ChatMessage
-import com.example.learneverythingbot.data.model.Role
-import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.learneverythingbot.components.ChatHistoryDrawer
+import com.example.learneverythingbot.components.MessageInputBar
+import com.example.learneverythingbot.domain.model.ChatMessage
+import com.example.learneverythingbot.domain.model.Role
+import com.example.learneverythingbot.ui.theme.Purple40
+import com.example.learneverythingbot.viewmodel.ChatHistoryViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    //subject: String,
-    onMenuClick: () -> Unit = {},
+    subject: String,
+    modifier: Modifier= Modifier
 ) {
-    var input by rememberSaveable { mutableStateOf("") }
-    val messages = remember { mutableStateListOf<ChatMessage>() }
+    val context = LocalContext.current
+    val viewModel: ChatHistoryViewModel = viewModel(
+        factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
+            .getInstance(context.applicationContext as android.app.Application)
+    )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    IconButton(onClick = onMenuClick) { Icon(Icons.Default.Menu, null) }
-                },
-                title = {
-                    Text(
-                        text = stringResource(id= R.string.title_activity_chat, "formatArgs"),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            )
-        },
-        bottomBar = {
-            MessageInputBar(
-                onMessageSend = { userText ->
-                    messages += ChatMessage(Role.User, userText)
-                    GlobalScope.launch(Dispatchers.IO){
-                        val response = chatGpt(input = userText)
-                        messages += ChatMessage(
-                            Role.Assistant,
-                            response
-                        )
+    val chatHistory by viewModel.chatHistory.collectAsState()
+    val drawerVisible by viewModel.drawerVisible.collectAsState()
+    val drawerState = rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+
+    var messages by remember { mutableStateOf<List<ChatMessage>>(emptyList()) }
+
+
+    LaunchedEffect(subject) {
+        if (subject.isNotEmpty()) {
+
+            messages = emptyList()
+        }
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ChatHistoryDrawer(
+                allChats = chatHistory,
+                onChatSelected = { chatHistory ->
+                    viewModel.hideDrawer()
+                    coroutineScope.launch {
+                        drawerState.close()
                     }
+                },
+                onChatDeleted = { chatHistory ->
+                    viewModel.deleteChat(chatHistory.id)
+                },
+                onClearAll = {
+                    viewModel.deleteAllChat()
                 }
             )
         }
-    ) { inner ->
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(inner)
-        ) {
-            if (messages.isEmpty()) {
-                Text(
-                    text = stringResource(id= R.string.initial_prompt),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(start = 16.dp, end = 16.dp),
-                    style = MaterialTheme.typography.titleLarge,
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = if (subject.isNotEmpty())
+                                "Chat: $subject"
+                            else
+                                "Learn Everything Bot"
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                viewModel.showDrawer()
+                                coroutineScope.launch {
+                                    drawerState.open()
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.Menu, contentDescription = "Abrir Menu")
+                        }
+                    }
                 )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(top = 12.dp, bottom = 100.dp)
-                ) {
-                    items(messages) { msg ->
-                        when (msg.role) {
-                            Role.User -> UserBubble(msg.text)
-                            Role.Assistant -> AssistantText(msg.text)
+            },
+            bottomBar = {
+                if (subject.isNotEmpty()) {
+                    MessageInputBar(
+                        onMessageSend = { userText ->
+
+                            val userMessage = ChatMessage(Role.User, userText)
+                            messages = messages + userMessage
+
+
+                            val aiResponse = ChatMessage(
+                                Role.Assistant,
+                                "Resposta para: \"$userText\""
+                            )
+                            messages = messages + aiResponse
+
+
+                            viewModel.saveChat(userText, "Resposta para: \"$userText\"")
+                        }
+                    )
+                }
+            }
+        ) { inner ->
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(inner)
+            ) {
+                if (messages.isEmpty()) {
+                    Text(
+                        text = stringResource(id = com.example.learneverythingbot.R.string.initial_prompt),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(top = 12.dp, bottom = 100.dp)
+                    ) {
+                        items(messages) { msg ->
+                            when (msg.role) {
+                                Role.User -> UserBubble(msg.text)
+                                Role.Assistant -> AssistantText(msg.text)
+                            }
                         }
                     }
                 }
             }
         }
-    }
-}
-
-private suspend fun chatGpt(input: String): String {
-    val service = RetrofitClient.retrofitInstance.create(OpenAiService::class.java)
-    val remoteDataSource = LearningTopicsRemoteDataSource(service)
-    val result = remoteDataSource.learningTopicsResponse(input)
-
-    return if (result.isSuccess) {
-        result.getOrNull() ?: "Error: empty response from API"
-    } else {
-        "Erro: ${result.exceptionOrNull()?.message}"
     }
 }
 
@@ -141,12 +182,11 @@ private fun AssistantText(text: String) {
     }
 }
 
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ChatScreenPreviewEmpty() {
     MaterialTheme {
-        ChatScreen()
+        ChatScreen(subject = "Kotlin")
     }
 }
 
@@ -154,16 +194,6 @@ fun ChatScreenPreviewEmpty() {
 @Composable
 fun ChatScreenPreviewWithMessages() {
     MaterialTheme {
-        val mockMessages = listOf(
-            ChatMessage(Role.User, "Sure thing, I'll have a look today."),
-            ChatMessage(Role.Assistant, "Legal! Me diga o que deseja aprender hoje que eu monto um plano para você.")
-        )
-
-        CompositionLocalProvider {
-            var input by remember { mutableStateOf("") }
-            val messages = remember { mutableStateListOf<ChatMessage>().apply { addAll(mockMessages) } }
-
-            ChatScreen()
-        }
+        ChatScreen(subject = "Kotlin")
     }
 }
