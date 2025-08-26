@@ -4,10 +4,12 @@ package com.example.learneverythingbot.presentation.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -47,7 +49,7 @@ fun ChatScreen(
                 },
                 title = {
                     Text(
-                        text = stringResource(id= R.string.title_activity_chat, "formatArgs"),
+                        text = stringResource(id = R.string.title_activity_chat, "formatArgs"),
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -57,7 +59,7 @@ fun ChatScreen(
             MessageInputBar(
                 onMessageSend = { userText ->
                     messages += ChatMessage(Role.User, userText)
-                    GlobalScope.launch(Dispatchers.IO){
+                    GlobalScope.launch(Dispatchers.IO) {
                         val response = chatGpt(input = userText)
                         messages += ChatMessage(
                             Role.Assistant,
@@ -75,7 +77,7 @@ fun ChatScreen(
         ) {
             if (messages.isEmpty()) {
                 Text(
-                    text = stringResource(id= R.string.initial_prompt),
+                    text = stringResource(id = R.string.initial_prompt),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(start = 16.dp, end = 16.dp),

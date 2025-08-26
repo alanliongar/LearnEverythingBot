@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.learneverythingbot.R
 import com.example.learneverythingbot.utils.components.GetStartedButton
+import com.example.learneverythingbot.utils.components.QuizButton
 
 @Composable
 fun IntroScreen(innerPadding: PaddingValues, navController: NavHostController) {
@@ -102,9 +103,15 @@ fun WelcomeText(navController: NavController) {
 
         GetStartedButton(
             onClickNavigate = {
-                navController.navigate(route = "chatScreen")
+               navController.navigate(route = "chatScreen")
             }
         )
+        QuizButton(
+            onClickNavigate = {
+                navController.navigate("quizScreen")
+            }
+        )
+
     }
 }
 

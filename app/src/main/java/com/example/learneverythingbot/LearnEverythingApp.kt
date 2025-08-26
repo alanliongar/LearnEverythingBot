@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.learneverythingbot.presentation.screen.ChatScreen
 import com.example.learneverythingbot.presentation.screen.IntroScreen
+import com.example.learneverythingbot.presentation.screen.QuizScreen
 
 @Composable
 fun LearnEverythingApp(innerPadding: PaddingValues, modifier: Modifier = Modifier) {
@@ -18,6 +19,14 @@ fun LearnEverythingApp(innerPadding: PaddingValues, modifier: Modifier = Modifie
         }
         composable(route = "chatScreen") {
             ChatScreen()
+        }
+
+        composable("quizScreen") {
+            QuizScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

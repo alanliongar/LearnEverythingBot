@@ -9,5 +9,6 @@
     <string name="hint_message">Mensagem</string>
     <string name="send_label">Enviar</string>
     <string name="title_activity_chat">Chat Screen</string>
+    <string name="tomar_quiz">Tomar Quiz</string>
     <string name="title_activity_main2">MainActivity2</string>
 </resources>
