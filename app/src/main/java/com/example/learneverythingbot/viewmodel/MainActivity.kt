@@ -1,3 +1,4 @@
+/*
 package com.example.learneverythingbot.viewmodel
 
 import android.os.Bundle
@@ -49,3 +50,4 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+*/

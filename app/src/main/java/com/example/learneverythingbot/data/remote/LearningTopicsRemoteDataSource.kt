@@ -5,8 +5,8 @@ import com.example.learneverythingbot.data.model.OpenAiRequest
 
 class LearningTopicsRemoteDataSource(
     private val openAiService: OpenAiService
-) {
-    suspend fun learningTopicsResponse(topic: String): Result<String> {
+): RemoteDataSource {
+    override suspend fun learningTopicsResponse(topic: String): Result<String> {
         val prompt =
             """
             Quero aprender os conhecimentos de $topic, 

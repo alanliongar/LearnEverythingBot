@@ -1,4 +1,5 @@
 package com.example.learneverythingbot.viewmodel
+/*
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.learneverythingbot.components.MessageInputBar
+import com.example.learneverythingbot.presentation.screen.ui.theme.LearnEverythingBotTheme
 import com.example.learneverythingbot.screen.ChatScreen
 
 import com.example.learneverythingbot.ui.theme.LearnEverythingBotTheme
+import com.example.learneverythingbot.utils.components.MessageInputBar
 
 class ChatActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,4 +60,4 @@ fun GreetingPreview2() {
     LearnEverythingBotTheme {
         ChatPage("Android")
     }
-}
+}*/

@@ -1,67 +1,94 @@
 package com.example.learneverythingbot.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.learneverythingbot.data.local.database.AppDatabase
 import com.example.learneverythingbot.data.repository.ChatRepository
+import com.example.learneverythingbot.domain.model.Chat
 import com.example.learneverythingbot.domain.model.ChatHistory
+import com.example.learneverythingbot.domain.model.ChatHistoryDrawerUiState
+import com.example.learneverythingbot.domain.model.ChatScreenUiState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ChatHistoryViewModel(application: Application) : AndroidViewModel(application) {
+class ChatHistoryViewModel(private val repository: ChatRepository) : ViewModel() {
+    private val _drawerVisible = MutableStateFlow(false)
+    val drawerVisible: StateFlow<Boolean> = _drawerVisible
 
-    private val repository: ChatRepository
-    val chatHistory = MutableStateFlow<List<ChatHistory>>(emptyList())
-    val drawerVisible = MutableStateFlow(false)
+    private val _chatScreenUiState = MutableStateFlow(ChatScreenUiState())
+    val chatScreenUiState: StateFlow<ChatScreenUiState> = _chatScreenUiState
+
+    private val _chatHistoryDrawerUiState =
+        MutableStateFlow(ChatHistoryDrawerUiState())
+    val chatHistoryDrawerUiState: StateFlow<ChatHistoryDrawerUiState> = _chatHistoryDrawerUiState
 
     init {
-        val database = AppDatabase.getInstance(application)
-        val dao = database.chatHistoryDao()
-        repository = ChatRepository(dao)
-        loadChatHistory()
-    }
-
-    private fun loadChatHistory() {
         viewModelScope.launch {
-            repository.allchats.collect { chats ->
-                chatHistory.value = chats
+            _chatHistoryDrawerUiState.value = ChatHistoryDrawerUiState(isLoading = true)
+            repository.getAllChatHistory().collect { history ->
+                _chatHistoryDrawerUiState.value = ChatHistoryDrawerUiState(
+                    chatHistory = history
+                )
             }
         }
     }
 
     fun toggleDrawer() {
-        drawerVisible.value = !drawerVisible.value
+        _drawerVisible.value = !_drawerVisible.value
     }
 
     fun showDrawer() {
-        drawerVisible.value = true
+        _drawerVisible.value = true
     }
 
     fun hideDrawer() {
-        drawerVisible.value = false
+        _drawerVisible.value = false
     }
 
-    fun deleteChat(id: Int) {
+    fun deleteChat(id: Int){
+
+    }
+
+    fun deleteAllChat(){
+
+    }
+
+    fun getGptResponse(userMessage: String) {
         viewModelScope.launch {
-            repository.deleteChat(id)
+            _chatScreenUiState.value = ChatScreenUiState(isLoading = true)
+            val result = repository.getGptResponse(topic = userMessage)
+            if (result.isSuccess && result.getOrNull() != null) {
+                val fullResponse = requireNotNull(result.getOrNull()!!)
+                _chatScreenUiState.value = ChatScreenUiState(
+                    chat = Chat(
+                        subject = userMessage,
+                        aiAnswer = fullResponse.aiResponse,
+                        timeStamp = fullResponse.timestamp
+                    )
+                )
+                saveChat(
+                    userMessage = userMessage,
+                    aiResponse = fullResponse.aiResponse,
+                    timeStamp = fullResponse.timestamp
+                )
+            } else {
+                _chatScreenUiState.value = ChatScreenUiState(isError = true)
+            }
         }
     }
 
-    fun deleteAllChat() {
+    fun saveChat(userMessage: String, aiResponse: String, timeStamp: Long) {
         viewModelScope.launch {
-            repository.deleteAllChat()
-        }
-    }
-
-    fun saveChat(userMessage: String, aiResponse: String) {
-        viewModelScope.launch {
+            _chatScreenUiState.value = ChatScreenUiState(isLoading = true)
             val chatHistory = ChatHistory(
                 userMessage = userMessage,
                 aiResponse = aiResponse,
-                timestamp = System.currentTimeMillis()
+                timestamp = timeStamp
             )
-            repository.insertChat(chatHistory)
+            repository.insertChat(chatHistory = chatHistory)
+            _chatScreenUiState.value = ChatScreenUiState(
+                isLoading = false
+            )
         }
     }
 }

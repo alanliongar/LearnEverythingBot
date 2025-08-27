@@ -17,12 +17,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.learneverythingbot.components.ChatHistoryDrawer
-import com.example.learneverythingbot.components.MessageInputBar
+import com.example.learneverythingbot.utils.components.MessageInputBar
 import com.example.learneverythingbot.domain.model.ChatMessage
 import com.example.learneverythingbot.domain.model.Role
-import com.example.learneverythingbot.ui.theme.Purple40
+import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
 import com.example.learneverythingbot.viewmodel.ChatHistoryViewModel
 import kotlinx.coroutines.launch
 
@@ -30,25 +31,27 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatScreen(
     subject: String,
-    modifier: Modifier= Modifier
+    chatHistoryViewModel: ChatHistoryViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val viewModel: ChatHistoryViewModel = viewModel(
-        factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
-            .getInstance(context.applicationContext as android.app.Application)
-    )
 
-    val chatHistory by viewModel.chatHistory.collectAsState()
-    val drawerVisible by viewModel.drawerVisible.collectAsState()
+    val chatHistory by chatHistoryViewModel.chatHistoryDrawerUiState.collectAsState()
+    val drawerVisible by chatHistoryViewModel.drawerVisible.collectAsState()
     val drawerState = rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
     var messages by remember { mutableStateOf<List<ChatMessage>>(emptyList()) }
 
 
+
+
+
+
+
+
+
     LaunchedEffect(subject) {
         if (subject.isNotEmpty()) {
-
             messages = emptyList()
         }
     }
@@ -57,18 +60,18 @@ fun ChatScreen(
         drawerState = drawerState,
         drawerContent = {
             ChatHistoryDrawer(
-                allChats = chatHistory,
+                allChats = chatHistory.chatHistory,
                 onChatSelected = { chatHistory ->
-                    viewModel.hideDrawer()
+                    chatHistoryViewModel.hideDrawer()
                     coroutineScope.launch {
                         drawerState.close()
                     }
                 },
                 onChatDeleted = { chatHistory ->
-                    viewModel.deleteChat(chatHistory.id)
+                    chatHistoryViewModel.deleteChat(chatHistory.id)
                 },
                 onClearAll = {
-                    viewModel.deleteAllChat()
+                    chatHistoryViewModel.deleteAllChat()
                 }
             )
         }
@@ -79,7 +82,7 @@ fun ChatScreen(
                     title = {
                         Text(
                             text = if (subject.isNotEmpty())
-                                "Chat: $subject"
+                                "Assunto: $subject"
                             else
                                 "Learn Everything Bot"
                         )
@@ -87,7 +90,7 @@ fun ChatScreen(
                     navigationIcon = {
                         IconButton(
                             onClick = {
-                                viewModel.showDrawer()
+                                chatHistoryViewModel.showDrawer()
                                 coroutineScope.launch {
                                     drawerState.open()
                                 }
@@ -114,7 +117,7 @@ fun ChatScreen(
                             messages = messages + aiResponse
 
 
-                            viewModel.saveChat(userText, "Resposta para: \"$userText\"")
+                            chatHistoryViewModel.getGptResponse(userText)
                         }
                     )
                 }
