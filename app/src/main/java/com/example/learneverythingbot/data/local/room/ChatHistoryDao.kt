@@ -1,9 +1,9 @@
-package com.example.learneverythingbot.data.local.dao
+﻿package com.example.learneverythingbot.data.local.room
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.example.learneverythingbot.data.local.entity.ChatHistoryEntity
+import com.example.learneverythingbot.data.local.room.ChatHistoryEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

@@ -1,4 +1,4 @@
-package com.example.learneverythingbot.data.local.entity
+﻿package com.example.learneverythingbot.data.local.room
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

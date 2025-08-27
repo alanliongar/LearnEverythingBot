@@ -1,4 +1,4 @@
-package com.example.learneverythingbot.data.remote
+﻿package com.example.learneverythingbot.data.remote.retrofit
 
 import com.example.learneverythingbot.data.model.OpenAiRequest
 import com.example.learneverythingbot.data.model.OpenAiResponse

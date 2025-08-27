@@ -18,41 +18,40 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.learneverythingbot.components.ChatHistoryDrawer
-import com.example.learneverythingbot.utils.components.MessageInputBar
+import com.example.learneverythingbot.presentation.screen.components.MessageInputBar
 import com.example.learneverythingbot.domain.model.ChatMessage
 import com.example.learneverythingbot.domain.model.Role
 import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
-import com.example.learneverythingbot.viewmodel.ChatHistoryViewModel
+import com.example.learneverythingbot.presentation.ChatViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     subject: String,
-    chatHistoryViewModel: ChatHistoryViewModel = hiltViewModel()
+    chatViewModel: ChatViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
 
-    val chatHistory by chatHistoryViewModel.chatHistoryDrawerUiState.collectAsState()
-    val drawerVisible by chatHistoryViewModel.drawerVisible.collectAsState()
+    val chatHistory by chatViewModel.chatHistoryDrawerUiState.collectAsState()
+    val chatScreenUiState by chatViewModel.chatScreenUiState.collectAsState()
+    val drawerVisible by chatViewModel.drawerVisible.collectAsState()
     val drawerState = rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
     var messages by remember { mutableStateOf<List<ChatMessage>>(emptyList()) }
 
 
-
-
-
-
-
-
-
-    LaunchedEffect(subject) {
-        if (subject.isNotEmpty()) {
-            messages = emptyList()
+    LaunchedEffect(chatScreenUiState.chat.aiAnswer) {
+        val answer = chatScreenUiState.chat.aiAnswer
+        if (answer.isNotBlank()) {
+            // se a última é o placeholder, substitui; senão adiciona
+            if (messages.isNotEmpty() && messages.last().role == Role.Assistant) {
+                messages = messages.dropLast(1) + ChatMessage(Role.Assistant, answer)
+            } else {
+                messages += ChatMessage(Role.Assistant, answer)
+            }
         }
     }
 
@@ -62,16 +61,16 @@ fun ChatScreen(
             ChatHistoryDrawer(
                 allChats = chatHistory.chatHistory,
                 onChatSelected = { chatHistory ->
-                    chatHistoryViewModel.hideDrawer()
+                    chatViewModel.hideDrawer()
                     coroutineScope.launch {
                         drawerState.close()
                     }
                 },
                 onChatDeleted = { chatHistory ->
-                    chatHistoryViewModel.deleteChat(chatHistory.id)
+                    chatViewModel.deleteChat(chatHistory.id)
                 },
                 onClearAll = {
-                    chatHistoryViewModel.deleteAllChat()
+                    chatViewModel.deleteAllChat()
                 }
             )
         }
@@ -90,7 +89,7 @@ fun ChatScreen(
                     navigationIcon = {
                         IconButton(
                             onClick = {
-                                chatHistoryViewModel.showDrawer()
+                                chatViewModel.showDrawer()
                                 coroutineScope.launch {
                                     drawerState.open()
                                 }
@@ -105,21 +104,12 @@ fun ChatScreen(
                 if (subject.isNotEmpty()) {
                     MessageInputBar(
                         onMessageSend = { userText ->
-
-                            val userMessage = ChatMessage(Role.User, userText)
-                            messages = messages + userMessage
-
-
-                            val aiResponse = ChatMessage(
-                                Role.Assistant,
-                                "Resposta para: \"$userText\""
-                            )
-                            messages = messages + aiResponse
-
-
-                            chatHistoryViewModel.getGptResponse(userText)
+                            messages += ChatMessage(Role.User, userText)
+                            messages += ChatMessage(Role.Assistant, "Digitando...")
+                            chatViewModel.getGptResponse(userText)
                         }
                     )
+
                 }
             }
         ) { inner ->

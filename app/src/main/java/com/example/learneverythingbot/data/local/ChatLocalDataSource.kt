@@ -1,15 +1,18 @@
 ﻿package com.example.learneverythingbot.data.local
 
-import com.example.learneverythingbot.data.local.dao.ChatHistoryDao
-import com.example.learneverythingbot.data.local.entity.ChatHistoryEntity
+import com.example.learneverythingbot.data.local.room.ChatHistoryDao
+import com.example.learneverythingbot.data.local.room.ChatHistoryEntity
+import com.example.learneverythingbot.di.DispatcherIO
 import com.example.learneverythingbot.domain.model.ChatHistory
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class ChatLocalDataSource(
-    private val chatHistoryDao: ChatHistoryDao
+class ChatLocalDataSource @Inject constructor(
+    private val chatHistoryDao: ChatHistoryDao,
+    @DispatcherIO val dispatcher: CoroutineDispatcher
 ) : LocalDataSource {
 
     override fun getAllChatHistory(): Flow<List<ChatHistory>> =
@@ -17,7 +20,7 @@ class ChatLocalDataSource(
             .map { entities ->
                 entities.map { it.toDomain() } // mapeamento pesado fica no IO
             }
-            .flowOn(Dispatchers.IO) // 👈 aplica aqui UMA vez
+            .flowOn(context = dispatcher) // 👈 aplica aqui UMA vez
 
     private fun ChatHistoryEntity.toDomain() = ChatHistory(
         id = id,

@@ -2,10 +2,11 @@
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.learneverythingbot.presentation.screen.IntroScreen
 import com.example.learneverythingbot.screen.ChatScreen
 
@@ -16,8 +17,17 @@ fun LearnEverythingApp(innerPadding: PaddingValues) {
         composable(route = "introScreen") {
             IntroScreen(innerPadding = innerPadding, navController = navController)
         }
-        composable(route = "chatScreen") {
-            ChatScreen(subject = "")
+        composable(
+            route = "chatScreen?subject={subject}",
+            arguments = listOf(
+                navArgument("subject") {
+                    type = NavType.StringType
+                    defaultValue = "Geral"   // valor padrão
+                }
+            )
+        ) { backStackEntry ->
+            val subject = backStackEntry.arguments?.getString("subject").orEmpty()
+            ChatScreen(subject = subject)
         }
     }
 }

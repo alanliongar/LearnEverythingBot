@@ -1,17 +1,25 @@
-package com.example.learneverythingbot.viewmodel
+﻿package com.example.learneverythingbot.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.learneverythingbot.data.repository.ChatRepository
+import com.example.learneverythingbot.data.ChatRepository
+import com.example.learneverythingbot.di.DispatcherIO
 import com.example.learneverythingbot.domain.model.Chat
 import com.example.learneverythingbot.domain.model.ChatHistory
 import com.example.learneverythingbot.domain.model.ChatHistoryDrawerUiState
 import com.example.learneverythingbot.domain.model.ChatScreenUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ChatHistoryViewModel(private val repository: ChatRepository) : ViewModel() {
+@HiltViewModel
+class ChatViewModel @Inject constructor(
+    private val repository: ChatRepository,
+    @DispatcherIO val dispatcher: CoroutineDispatcher,
+) : ViewModel() {
     private val _drawerVisible = MutableStateFlow(false)
     val drawerVisible: StateFlow<Boolean> = _drawerVisible
 
@@ -23,7 +31,7 @@ class ChatHistoryViewModel(private val repository: ChatRepository) : ViewModel()
     val chatHistoryDrawerUiState: StateFlow<ChatHistoryDrawerUiState> = _chatHistoryDrawerUiState
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(context = dispatcher) {
             _chatHistoryDrawerUiState.value = ChatHistoryDrawerUiState(isLoading = true)
             repository.getAllChatHistory().collect { history ->
                 _chatHistoryDrawerUiState.value = ChatHistoryDrawerUiState(
@@ -45,16 +53,18 @@ class ChatHistoryViewModel(private val repository: ChatRepository) : ViewModel()
         _drawerVisible.value = false
     }
 
-    fun deleteChat(id: Int){
+    fun deleteChat(id: Int) {
 
     }
 
-    fun deleteAllChat(){
-
+    fun deleteAllChat() {
+        viewModelScope.launch(context = dispatcher) {
+            repository.deleteAllChat()
+        }
     }
 
     fun getGptResponse(userMessage: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(context = dispatcher) {
             _chatScreenUiState.value = ChatScreenUiState(isLoading = true)
             val result = repository.getGptResponse(topic = userMessage)
             if (result.isSuccess && result.getOrNull() != null) {
@@ -78,7 +88,7 @@ class ChatHistoryViewModel(private val repository: ChatRepository) : ViewModel()
     }
 
     fun saveChat(userMessage: String, aiResponse: String, timeStamp: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(context = dispatcher) {
             _chatScreenUiState.value = ChatScreenUiState(isLoading = true)
             val chatHistory = ChatHistory(
                 userMessage = userMessage,
@@ -87,7 +97,11 @@ class ChatHistoryViewModel(private val repository: ChatRepository) : ViewModel()
             )
             repository.insertChat(chatHistory = chatHistory)
             _chatScreenUiState.value = ChatScreenUiState(
-                isLoading = false
+                chat = Chat(
+                    subject = userMessage,
+                    aiAnswer = aiResponse,
+                    timeStamp = timeStamp
+                )
             )
         }
     }

@@ -2,10 +2,9 @@
 
 import android.app.Application
 import androidx.room.Room
-import com.example.learneverythingbot.data.local.dao.ChatHistoryDao
-import com.example.learneverythingbot.data.local.database.AppDatabase
-import com.example.learneverythingbot.data.remote.RetrofitClient
-import com.example.learneverythingbot.di.DispatcherIO
+import com.example.learneverythingbot.data.local.room.ChatHistoryDao
+import com.example.learneverythingbot.data.local.room.AppDatabase
+import com.example.learneverythingbot.data.remote.retrofit.RetrofitClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,7 +18,7 @@ import retrofit2.Retrofit
 @InstallIn(SingletonComponent::class)
 class LearnEverythingModule {
     @Provides
-    fun provideCineNowDataBase(application: Application): AppDatabase {
+    fun procidesAppDataBase(application: Application): AppDatabase {
         return Room.databaseBuilder(
             application.applicationContext,
             AppDatabase::class.java,
@@ -28,12 +27,12 @@ class LearnEverythingModule {
     }
 
     @Provides
-    fun provideChatHistoryDao(roomDatabase: AppDatabase): ChatHistoryDao {
+    fun providesChatHistoryDao(roomDatabase: AppDatabase): ChatHistoryDao {
         return roomDatabase.chatHistoryDao()
     }
 
     @Provides
-    fun provideRetrofit(): Retrofit {
+    fun providesRetrofit(): Retrofit {
         return RetrofitClient.retrofitInstance
     }
 

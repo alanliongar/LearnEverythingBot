@@ -1,21 +1,20 @@
-package com.example.learneverythingbot.data.repository
+﻿package com.example.learneverythingbot.data
 
 import com.example.learneverythingbot.data.local.LocalDataSource
 import com.example.learneverythingbot.data.remote.RemoteDataSource
 import com.example.learneverythingbot.domain.model.ChatHistory
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class ChatRepository(
+class ChatRepository @Inject constructor(
     private val local: LocalDataSource,
     private val remote: RemoteDataSource
 ) {
-
-
     suspend fun getGptResponse(topic: String): Result<ChatHistory> {
         var endResult: Result<ChatHistory>
         try {
-            val result = remote.learningTopicsResponse(topic = topic)
+            val result = remote.learnChatTopicGptResponse(topic = topic)
             if (result.isSuccess) {
                 val remoteGptResponse = result.getOrNull() ?: ""
                 if (remoteGptResponse.isNotEmpty()) {
@@ -23,9 +22,6 @@ class ChatRepository(
                         id = 0,
                         userMessage = topic,
                         aiResponse = remoteGptResponse
-                    )
-                    local.insertChatHistory(
-                        chatHistory = lastResponse
                     )
                     endResult = Result.success(lastResponse)
                 } else {

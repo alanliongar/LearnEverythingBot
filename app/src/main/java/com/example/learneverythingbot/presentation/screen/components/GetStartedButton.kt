@@ -1,4 +1,4 @@
-package com.example.learneverythingbot.utils.components
+package com.example.learneverythingbot.presentation.screen.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height

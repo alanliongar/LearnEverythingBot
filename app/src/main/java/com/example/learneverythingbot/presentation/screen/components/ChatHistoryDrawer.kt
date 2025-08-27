@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
@@ -56,7 +57,7 @@ fun ChatHistoryDrawer(
         ) {
             Text(
                 text = "Histórico de Conversas",
-                style = androidx.compose.material3.MaterialTheme.typography.titleLarge.copy(
+                style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
                 color = surfaceColor
@@ -71,7 +72,7 @@ fun ChatHistoryDrawer(
             if (allChats.isEmpty()) {
                 Text(
                     text = "Nenhuma conversa salva",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = onSurfaceVariantColor,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -89,21 +90,21 @@ fun ChatHistoryDrawer(
                                 Column {
                                     Text(
                                         text = chat.userMessage,
-                                        style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                                        style = MaterialTheme.typography.bodyLarge,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         color = surfaceColor
                                     )
                                     Text(
                                         text = chat.aiResponse,
-                                        style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                                        style = MaterialTheme.typography.bodyMedium,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         color = surfaceColor
                                     )
                                     Text(
                                         text = formatDate(chat.timestamp),
-                                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                                        style = MaterialTheme.typography.bodySmall,
                                         color = onSurfaceVariantColor,
                                         modifier = Modifier.padding(top = 2.dp)
                                     )
@@ -132,7 +133,7 @@ fun ChatHistoryDrawer(
                 label = {
                     Text(
                         text = "Limpar histórico",
-                        style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = errorColor
                     )
                 },

@@ -2,11 +2,13 @@
 
 import com.example.learneverythingbot.data.model.Message
 import com.example.learneverythingbot.data.model.OpenAiRequest
+import com.example.learneverythingbot.data.remote.retrofit.OpenAiService
+import javax.inject.Inject
 
-class LearningTopicsRemoteDataSource(
+class ChatRemoteDataSource @Inject constructor(
     private val openAiService: OpenAiService
 ): RemoteDataSource {
-    override suspend fun learningTopicsResponse(topic: String): Result<String> {
+    override suspend fun learnChatTopicGptResponse(topic: String): Result<String> {
         val prompt =
             """
             Quero aprender os conhecimentos de $topic, 
