@@ -19,4 +19,7 @@ interface ChatHistoryDao {
 
     @Query("DELETE FROM chat_history")
     suspend fun deleteAllChat()
+
+    @Query("SELECT * FROM chat_history WHERE id = :id")
+    suspend fun getChatById(id: Int): ChatHistoryEntity?
 }

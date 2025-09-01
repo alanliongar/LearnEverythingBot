@@ -18,7 +18,7 @@ import retrofit2.Retrofit
 @InstallIn(SingletonComponent::class)
 class LearnEverythingModule {
     @Provides
-    fun procidesAppDataBase(application: Application): AppDatabase {
+    fun providesAppDataBase(application: Application): AppDatabase {
         return Room.databaseBuilder(
             application.applicationContext,
             AppDatabase::class.java,

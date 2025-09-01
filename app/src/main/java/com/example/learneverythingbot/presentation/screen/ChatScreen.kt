@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.learneverythingbot.components.ChatHistoryDrawer
 import com.example.learneverythingbot.presentation.screen.components.MessageInputBar
 import com.example.learneverythingbot.domain.model.ChatMessage
@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatScreen(
     subject: String,
+    navController: NavHostController,
     chatViewModel: ChatViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -37,21 +38,46 @@ fun ChatScreen(
     val chatHistory by chatViewModel.chatHistoryDrawerUiState.collectAsState()
     val chatScreenUiState by chatViewModel.chatScreenUiState.collectAsState()
     val drawerVisible by chatViewModel.drawerVisible.collectAsState()
+    val navigateToChatId by chatViewModel.navigateToChatId.collectAsState()
+
     val drawerState = rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
     var messages by remember { mutableStateOf<List<ChatMessage>>(emptyList()) }
 
+    val shouldNavigate by remember {mutableStateOf(false)}
 
     LaunchedEffect(chatScreenUiState.chat.aiAnswer) {
         val answer = chatScreenUiState.chat.aiAnswer
         if (answer.isNotBlank()) {
-            // se a última é o placeholder, substitui; senão adiciona
             if (messages.isNotEmpty() && messages.last().role == Role.Assistant) {
                 messages = messages.dropLast(1) + ChatMessage(Role.Assistant, answer)
             } else {
                 messages += ChatMessage(Role.Assistant, answer)
             }
+        }
+    }
+
+    LaunchedEffect(navigateToChatId) {
+        navigateToChatId?.let { chatId ->
+            if (chatId > 0) {
+                println("Navegando para chat ID: $chatId")
+                navController.navigate("chatHistoryDetail?chatId=$chatId")
+                chatViewModel.resetNavigation()
+                chatViewModel.hideDrawer()
+                coroutineScope.launch {
+                    drawerState.close()
+                }
+            }
+        }
+    }
+
+
+
+    if (!chatScreenUiState.error.isNullOrEmpty()) {
+        LaunchedEffect(chatScreenUiState.error) {
+           //TODO IMPLEMENTAR UM SNACKBAR PARA EXIBIR ERRO
+            println("Erro: ${chatScreenUiState.error}")
         }
     }
 
@@ -61,10 +87,7 @@ fun ChatScreen(
             ChatHistoryDrawer(
                 allChats = chatHistory.chatHistory,
                 onChatSelected = { chatHistory ->
-                    chatViewModel.hideDrawer()
-                    coroutineScope.launch {
-                        drawerState.close()
-                    }
+                    chatViewModel.selectChat(chatHistory)
                 },
                 onChatDeleted = { chatHistory ->
                     chatViewModel.deleteChat(chatHistory.id)
@@ -107,9 +130,9 @@ fun ChatScreen(
                             messages += ChatMessage(Role.User, userText)
                             messages += ChatMessage(Role.Assistant, "Digitando...")
                             chatViewModel.getGptResponse(userText)
-                        }
-                    )
+                        },
 
+                    )
                 }
             }
         ) { inner ->
@@ -142,6 +165,15 @@ fun ChatScreen(
                         }
                     }
                 }
+
+                // Loading indicator
+                if (chatScreenUiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(48.dp)
+                    )
+                }
             }
         }
     }
@@ -172,21 +204,5 @@ private fun AssistantText(text: String) {
         ) {
             Text(text, color = MaterialTheme.colorScheme.onBackground, lineHeight = 20.sp)
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ChatScreenPreviewEmpty() {
-    MaterialTheme {
-        ChatScreen(subject = "Kotlin")
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ChatScreenPreviewWithMessages() {
-    MaterialTheme {
-        ChatScreen(subject = "Kotlin")
     }
 }

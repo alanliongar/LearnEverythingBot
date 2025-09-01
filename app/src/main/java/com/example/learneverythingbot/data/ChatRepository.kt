@@ -4,7 +4,6 @@ import com.example.learneverythingbot.data.local.LocalDataSource
 import com.example.learneverythingbot.data.remote.RemoteDataSource
 import com.example.learneverythingbot.domain.model.ChatHistory
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ChatRepository @Inject constructor(
@@ -12,45 +11,45 @@ class ChatRepository @Inject constructor(
     private val remote: RemoteDataSource
 ) {
     suspend fun getGptResponse(topic: String): Result<ChatHistory> {
-        var endResult: Result<ChatHistory>
-        try {
+        return try {
             val result = remote.learnChatTopicGptResponse(topic = topic)
             if (result.isSuccess) {
                 val remoteGptResponse = result.getOrNull() ?: ""
                 if (remoteGptResponse.isNotEmpty()) {
-                    val lastResponse = ChatHistory(
-                        id = 0,
+                    val chatHistory = ChatHistory(
+                        id = 0, // ID 0 para novo chat (Room irá auto-generate)
                         userMessage = topic,
                         aiResponse = remoteGptResponse
                     )
-                    endResult = Result.success(lastResponse)
+                    Result.success(chatHistory)
                 } else {
-                    endResult = Result.failure<ChatHistory>(Exception("Algo deu errado!"))
+                    Result.failure(Exception("Resposta vazia da API"))
                 }
             } else {
-                endResult = Result.failure<ChatHistory>(Exception("Algo deu errado!"))
+                Result.failure(Exception("Falha na chamada da API"))
             }
         } catch (ex: Exception) {
-            endResult = Result.failure<ChatHistory>(Exception(ex.message ?: "Algo deu errado!"))
+            Result.failure(Exception(ex.message ?: "Erro desconhecido"))
         }
-        return endResult
     }
 
     suspend fun insertChat(chatHistory: ChatHistory) {
         local.insertChatHistory(chatHistory = chatHistory)
     }
 
-    suspend fun deleteChat(id: Int){
+    suspend fun deleteChat(id: Int) {
         local.deleteChat(id = id)
     }
 
-    suspend fun deleteAllChat(){
+    suspend fun deleteAllChat() {
         local.deleteAllChat()
     }
 
     fun getAllChatHistory(): Flow<List<ChatHistory>> {
-        val placeholder = ChatHistory(0, "", "", System.currentTimeMillis())
-        return local.getAllChatHistory() //já vem do IO
-            .map { list -> if (list.isEmpty()) listOf(placeholder) else list }
+        return local.getAllChatHistory()
+    }
+
+    suspend fun getChatById(id: Int): ChatHistory? {
+        return local.getChatById(id)
     }
 }

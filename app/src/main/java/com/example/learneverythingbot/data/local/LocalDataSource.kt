@@ -11,4 +11,6 @@ interface LocalDataSource {
     suspend fun deleteAllChat()
 
     suspend fun deleteChat(id: Int)
+
+    suspend fun getChatById(id: Int): ChatHistory?
 }
