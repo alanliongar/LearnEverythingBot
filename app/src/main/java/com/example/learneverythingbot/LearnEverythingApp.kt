@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.learneverythingbot.presentation.screen.IntroScreen
+import com.example.learneverythingbot.presentation.screen.QuizScreen
 import com.example.learneverythingbot.screen.ChatScreen
 
 @Composable
@@ -28,6 +29,9 @@ fun LearnEverythingApp(innerPadding: PaddingValues) {
         ) { backStackEntry ->
             val subject = backStackEntry.arguments?.getString("subject").orEmpty()
             ChatScreen(subject = subject)
+        }
+        composable(route = "quizScreen") {
+            QuizScreen() {}
         }
     }
 }
