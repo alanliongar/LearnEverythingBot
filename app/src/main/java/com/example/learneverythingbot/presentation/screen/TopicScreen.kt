@@ -1,78 +1,103 @@
-package com.example.learneverythingbot.screen
+﻿package com.example.learneverythingbot.presentation.screen
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.learneverythingbot.components.ChatHistoryDrawer
-import com.example.learneverythingbot.domain.model.Chat
-import com.example.learneverythingbot.domain.model.HistoryItem
 import com.example.learneverythingbot.domain.model.ChatHistoryDrawerUiState
-import com.example.learneverythingbot.presentation.screen.components.MessageInputBar
 import com.example.learneverythingbot.domain.model.ChatMessage
 import com.example.learneverythingbot.domain.model.ChatScreenUiState
+import com.example.learneverythingbot.domain.model.HistoryItem
 import com.example.learneverythingbot.domain.model.Role
-import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
-import com.example.learneverythingbot.presentation.ChatViewModel
+import com.example.learneverythingbot.domain.model.TopicHistoryDrawerUiState
+import com.example.learneverythingbot.domain.model.TopicItem
+import com.example.learneverythingbot.domain.model.TopicScreenUiState
+import com.example.learneverythingbot.presentation.TopicViewModel
+import com.example.learneverythingbot.presentation.screen.components.MessageInputBar
+import com.example.learneverythingbot.screen.AssistantText
+import com.example.learneverythingbot.screen.UserBubble
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(
+fun TopicScreen(
     subject: String,
-    chatViewModel: ChatViewModel = hiltViewModel()
+    topicViewModel: TopicViewModel = hiltViewModel()
 ) {
-    val chatHistory by chatViewModel.chatHistoryDrawerUiState.collectAsState()
-    val chatScreenUiState by chatViewModel.chatScreenUiState.collectAsState()
-    val drawerVisible by chatViewModel.drawerVisible.collectAsState()
+    val chatHistory by topicViewModel.topicHistoryDrawerUiState.collectAsState()
+    val chatScreenUiState by topicViewModel.topicScreenUiState.collectAsState()
+    val drawerVisible by topicViewModel.drawerVisible.collectAsState()
     val drawerState =
         rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
-    ChatScreenContent(
-        chatScreenUiState = chatScreenUiState,
+    TopicScreenContent(
+        topicScreenUiState = chatScreenUiState,
         drawerState = drawerState,
-        chatHistory = chatHistory,
+        topicHistory = chatHistory,
         coroutineScope = coroutineScope,
-        onHideDrawer = { chatViewModel.hideDrawer() },
-        onShowDrawer = { chatViewModel.showDrawer() },
-        onDeleteChat = { chatViewModel.deleteChat(it) },
-        onDeleteAllChat = { chatViewModel.deleteAllChat() },
-        onGetGptResponse = { chatViewModel.getGptResponse(it) },
+        onHideDrawer = { topicViewModel.hideDrawer() },
+        onShowDrawer = { topicViewModel.showDrawer() },
+        onDeleteTopic = { topicViewModel.deleteChat(it) },
+        onDeleteAllTopic = { topicViewModel.deleteAllChat() },
+        onGetGptResponse = { topicViewModel.getGptResponse(it) },
         subject = subject
     )
+
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ChatScreenContent(
-    chatScreenUiState: ChatScreenUiState,
+private fun TopicScreenContent(
+    modifier: Modifier = Modifier,
+    topicScreenUiState: TopicScreenUiState,
     drawerState: DrawerState,
-    chatHistory: ChatHistoryDrawerUiState,
+    topicHistory: TopicHistoryDrawerUiState,
     coroutineScope: CoroutineScope,
     onHideDrawer: () -> Unit,
     onShowDrawer: () -> Unit,
-    onDeleteChat: (Int) -> Unit,
-    onDeleteAllChat: () -> Unit,
+    onDeleteTopic: (Int) -> Unit,
+    onDeleteAllTopic: () -> Unit,
     onGetGptResponse: (String) -> Unit,
     subject: String,
 ) {
-    val historyMessages = remember(chatHistory.historyItems) {
-        chatHistory.historyItems
+    val historyMessages = remember(topicHistory.topicHistoryItems) {
+        topicHistory.topicHistoryItems
             .sortedBy { it.timestamp }
             .flatMap { item ->
                 buildList {
@@ -89,8 +114,8 @@ private fun ChatScreenContent(
     val isGenericSubject = subject.isBlank() || subject.equals("Geral", ignoreCase = true)
     var isTyping by remember { mutableStateOf(false) }
 
-    LaunchedEffect(chatScreenUiState.chat.aiAnswer) {
-        if (chatScreenUiState.chat.aiAnswer.isNotBlank()) {
+    LaunchedEffect(topicScreenUiState.chat.aiAnswer) {
+        if (topicScreenUiState.chat.aiAnswer.isNotBlank()) {
             isTyping = false
         }
     }
@@ -99,13 +124,13 @@ private fun ChatScreenContent(
         drawerState = drawerState,
         drawerContent = {
             ChatHistoryDrawer(
-                allChats = chatHistory.historyItems,
+                allChats = topicHistory.topicHistoryItems,
                 onChatSelected = {
                     onHideDrawer()
                     coroutineScope.launch { drawerState.close() }
                 },
-                onChatDeleted = { onDeleteChat(it.id) },
-                onClearAll = { onDeleteAllChat() }
+                onChatDeleted = { onDeleteTopic(it.id) },
+                onClearAll = { onDeleteAllTopic() }
             )
         }
     ) {
@@ -172,60 +197,33 @@ private fun ChatScreenContent(
     }
 }
 
-
 @Composable
-fun UserBubble(text: String) {
-    Row(Modifier.fillMaxWidth()) {
-        Spacer(Modifier.weight(1f))
-        Box(
-            Modifier
-                .widthIn(max = 320.dp)
-                .background(Purple40, RoundedCornerShape(16.dp))
-                .padding(horizontal = 12.dp, vertical = 10.dp)
-        ) {
-            Text(text, color = Color.White, lineHeight = 20.sp)
+fun TopicList(modifier: Modifier, topics: List<TopicItem>, onClick: (TopicItem) -> Unit) {
+    Column(modifier = modifier) {
+        topics.forEach { topic ->
+            Button(
+                onClick = { onClick(topic) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = (topic.level * 16).dp, top = 4.dp, bottom = 4.dp)
+            ) {
+                Text(text = topic.title)
+            }
         }
     }
 }
 
+@Preview(showBackground = true, showSystemUi = false)
 @Composable
-fun AssistantText(text: String) {
-    Row(Modifier.fillMaxWidth()) {
-        Box(
-            Modifier
-                .weight(1f)
-                .padding(end = 48.dp)
-        ) {
-            Text(text, color = MaterialTheme.colorScheme.onBackground, lineHeight = 20.sp)
-        }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ChatScreenPreviewEmpty() {
-    val chatScreenUiState = ChatScreenUiState(
-        chat = Chat(
-            subject = "",
-            aiAnswer = "", // vazio = sem mensagens
-            timeStamp = System.currentTimeMillis()
-        )
+fun TopicListPreview() {
+    val topicList = listOf(
+        TopicItem(title = "Kotlin", level = 0),
+        TopicItem(title = "Sintaxe Básica", level = 1),
+        TopicItem(title = "Funções", level = 1),
+        TopicItem(title = "Lambdas", level = 2),
+        TopicItem(title = "Coroutines", level = 1)
     )
-
-    MaterialTheme {
-        ChatScreenContent(
-            chatScreenUiState = chatScreenUiState,
-            drawerState = rememberDrawerState(DrawerValue.Closed),
-            chatHistory = ChatHistoryDrawerUiState(historyItems = emptyList()),
-            coroutineScope = rememberCoroutineScope(),
-            onHideDrawer = {},
-            onShowDrawer = {},
-            onDeleteChat = {},
-            onDeleteAllChat = {},
-            onGetGptResponse = {},
-            subject = ""
-        )
-    }
+    TopicList(modifier = Modifier, topics = topicList) {}
 }
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -235,53 +233,36 @@ fun ChatScreenPreviewWithMessages() {
         HistoryItem(
             id = 1,
             userMessage = "Kotlin",
-            aiResponse = "Esta é uma resposta simulada do Assistente.",
+            aiResponse =
+                "Introdução ao Kotlin\n" +
+                        "├── Fundamentos do Kotlin\n" +
+                        "├── Estruturas de Controle\n" +
+                        "├── Funções\n" +
+                        "├── Classes e Objetos\n" +
+                        "├── Herança e Interfaces\n" +
+                        "├── Tratamento de Exceções\n" +
+                        "├── Coleções em Kotlin\n" +
+                        "├── Funções de Ordem Superior\n" +
+                        "├── Programação Orientada a Eventos\n" +
+                        "├── Corotinas\n" +
+                        "├── Testes em Kotlin\n" +
+                        "├── Frameworks e Bibliotecas em Kotlin",
             timestamp = System.currentTimeMillis()
         )
     )
 
     MaterialTheme {
-        ChatScreenContent(
-            chatScreenUiState = ChatScreenUiState(),
+        TopicScreenContent(
+            topicScreenUiState = TopicScreenUiState(),
             drawerState = rememberDrawerState(DrawerValue.Closed),
-            chatHistory = ChatHistoryDrawerUiState(historyItems = fakeHistoryItem),
+            topicHistory = TopicHistoryDrawerUiState(fakeHistoryItem),
             coroutineScope = rememberCoroutineScope(),
             onHideDrawer = {},
             onShowDrawer = {},
-            onDeleteChat = {},
-            onDeleteAllChat = {},
+            onDeleteTopic = {},
+            onDeleteAllTopic = {},
             onGetGptResponse = {},
             subject = "Kotlin"
         )
     }
 }
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ChatScreenDrawerPreview() {
-    val fakeHistoryItem = listOf(
-        HistoryItem(
-            id = 1,
-            userMessage = "Kotlin",
-            aiResponse = "Esta é uma resposta simulada do Assistente.",
-            timestamp = System.currentTimeMillis()
-        )
-    )
-
-    MaterialTheme {
-        ChatScreenContent(
-            chatScreenUiState = ChatScreenUiState(),
-            drawerState = rememberDrawerState(DrawerValue.Open),
-            chatHistory = ChatHistoryDrawerUiState(historyItems = fakeHistoryItem),
-            coroutineScope = rememberCoroutineScope(),
-            onHideDrawer = {},
-            onShowDrawer = {},
-            onDeleteChat = {},
-            onDeleteAllChat = {},
-            onGetGptResponse = {},
-            subject = "Kotlin"
-        )
-    }
-}
-
-

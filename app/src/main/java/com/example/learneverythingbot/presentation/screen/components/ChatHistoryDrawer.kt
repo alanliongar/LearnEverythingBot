@@ -23,16 +23,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.learneverythingbot.domain.model.ChatHistory
+import com.example.learneverythingbot.domain.model.HistoryItem
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun ChatHistoryDrawer(
-    allChats: List<ChatHistory>,
-    onChatSelected: (ChatHistory) -> Unit,
-    onChatDeleted: (ChatHistory) -> Unit,
+    allChats: List<HistoryItem>,
+    onChatSelected: (HistoryItem) -> Unit,
+    onChatDeleted: (HistoryItem) -> Unit,
     onClearAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {

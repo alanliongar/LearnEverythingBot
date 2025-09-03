@@ -1,6 +1,6 @@
 package com.example.learneverythingbot.domain.model
 
-data class ChatHistory(
+data class HistoryItem(
     val id: Int = 0,
     val userMessage: String,
     val aiResponse: String,

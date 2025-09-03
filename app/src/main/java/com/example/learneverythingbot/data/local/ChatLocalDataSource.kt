@@ -3,7 +3,7 @@
 import com.example.learneverythingbot.data.local.room.ChatHistoryDao
 import com.example.learneverythingbot.data.local.room.ChatHistoryEntity
 import com.example.learneverythingbot.di.DispatcherIO
-import com.example.learneverythingbot.domain.model.ChatHistory
+import com.example.learneverythingbot.domain.model.HistoryItem
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -15,36 +15,36 @@ class ChatLocalDataSource @Inject constructor(
     @DispatcherIO val dispatcher: CoroutineDispatcher
 ) : LocalDataSource {
 
-    override fun getAllChatHistory(): Flow<List<ChatHistory>> =
+    override fun getAllChatHistory(): Flow<List<HistoryItem>> =
         chatHistoryDao.getAllChatHistory() // Flow<List<Entity>>
             .map { entities ->
                 entities.map { it.toDomain() } // mapeamento pesado fica no IO
             }
             .flowOn(context = dispatcher) // 👈 aplica aqui UMA vez
 
-    private fun ChatHistoryEntity.toDomain() = ChatHistory(
+    private fun ChatHistoryEntity.toDomain() = HistoryItem(
         id = id,
         userMessage = userMessage,
         aiResponse = aiResponse,
         timestamp = timestamp
     )
 
-    override suspend fun insertChatHistory(chatHistory: ChatHistory) {
+    override suspend fun insertTopicHistory(historyItem: HistoryItem) {
         chatHistoryDao.insertChatHistory(
             ChatHistoryEntity(
-                id = chatHistory.id,
-                userMessage = chatHistory.userMessage,
-                aiResponse = chatHistory.aiResponse,
-                timestamp = chatHistory.timestamp
+                id = historyItem.id,
+                userMessage = historyItem.userMessage,
+                aiResponse = historyItem.aiResponse,
+                timestamp = historyItem.timestamp
             )
         )
     }
 
-    override suspend fun deleteAllChat() {
+    override suspend fun deleteAllTopic() {
         chatHistoryDao.deleteAllChat()
     }
 
-    override suspend fun deleteChat(id: Int) {
+    override suspend fun deleteTopic(id: Int) {
         chatHistoryDao.deleteChat(id = id)
     }
 }

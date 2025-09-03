@@ -19,19 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.learneverythingbot.domain.model.ChatHistory
+import com.example.learneverythingbot.domain.model.HistoryItem
 
 @Composable
 fun ChatHistoryItem(
-    chatHistory: ChatHistory,
-    onItemClick: (ChatHistory) -> Unit,
-    onDeleteClick: (ChatHistory) -> Unit,
+    historyItem: HistoryItem,
+    onItemClick: (HistoryItem) -> Unit,
+    onDeleteClick: (HistoryItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onItemClick(chatHistory) },
+            .clickable { onItemClick(historyItem) },
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = MaterialTheme.shapes.medium
     ) {
@@ -45,14 +45,14 @@ fun ChatHistoryItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = chatHistory.userMessage,
+                    text = historyItem.userMessage,
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = chatHistory.aiResponse.take(50) + if (chatHistory.aiResponse.length > 50) "..." else "",
+                    text = historyItem.aiResponse.take(50) + if (historyItem.aiResponse.length > 50) "..." else "",
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -60,14 +60,14 @@ fun ChatHistoryItem(
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
-                    text = formatDate(chatHistory.timestamp),
+                    text = formatDate(historyItem.timestamp),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
             IconButton(
-                onClick = { onDeleteClick(chatHistory) },
+                onClick = { onDeleteClick(historyItem) },
                 modifier = Modifier.size(24.dp)
             ) {
                 Icon(
@@ -87,7 +87,7 @@ fun ChatHistoryItem(
 fun PreviewChatHistoryItem() {
     MaterialTheme {
         ChatHistoryItem(
-            chatHistory = ChatHistory(
+            historyItem = HistoryItem(
                 id = 1,
                 userMessage = "Olá, como você está?",
                 aiResponse = "Estou bem, obrigado por perguntar! E como posso ajudá-lo hoje?",
@@ -105,7 +105,7 @@ fun PreviewChatHistoryItem() {
 fun PreviewChatHistoryItemLongText() {
     MaterialTheme {
         ChatHistoryItem(
-            chatHistory = ChatHistory(
+            historyItem = HistoryItem(
                 id = 2,
                 userMessage = "Gostaria de aprender sobre programação em Kotlin e desenvolvimento Android",
                 aiResponse = "Ótimo! Kotlin é uma linguagem moderna e expressiva que é amplamente utilizada no desenvolvimento Android. Vamos começar com os conceitos básicos: variáveis, funções, classes...",

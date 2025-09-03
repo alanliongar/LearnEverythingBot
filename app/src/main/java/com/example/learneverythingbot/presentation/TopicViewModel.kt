@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.learneverythingbot.data.ChatRepository
 import com.example.learneverythingbot.di.DispatcherIO
-import com.example.learneverythingbot.domain.model.Chat
 import com.example.learneverythingbot.domain.model.HistoryItem
-import com.example.learneverythingbot.domain.model.ChatHistoryDrawerUiState
-import com.example.learneverythingbot.domain.model.ChatScreenUiState
+import com.example.learneverythingbot.domain.model.Topic
+import com.example.learneverythingbot.domain.model.TopicHistoryDrawerUiState
+import com.example.learneverythingbot.domain.model.TopicScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,26 +16,26 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ChatViewModel @Inject constructor(
+class TopicViewModel @Inject constructor(
     private val repository: ChatRepository,
     @DispatcherIO val dispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val _drawerVisible = MutableStateFlow(false)
     val drawerVisible: StateFlow<Boolean> = _drawerVisible
 
-    private val _chatScreenUiState = MutableStateFlow(ChatScreenUiState())
-    val chatScreenUiState: StateFlow<ChatScreenUiState> = _chatScreenUiState
+    private val _topicScreenUiState = MutableStateFlow(TopicScreenUiState())
+    val topicScreenUiState: StateFlow<TopicScreenUiState> = _topicScreenUiState
 
-    private val _chatHistoryDrawerUiState =
-        MutableStateFlow(ChatHistoryDrawerUiState())
-    val chatHistoryDrawerUiState: StateFlow<ChatHistoryDrawerUiState> = _chatHistoryDrawerUiState
+    private val _topicHistoryDrawerUiState =
+        MutableStateFlow(TopicHistoryDrawerUiState())
+    val topicHistoryDrawerUiState: StateFlow<TopicHistoryDrawerUiState> = _topicHistoryDrawerUiState
 
     init {
         viewModelScope.launch(context = dispatcher) {
-            _chatHistoryDrawerUiState.value = ChatHistoryDrawerUiState(isLoading = true)
+            _topicHistoryDrawerUiState.value = TopicHistoryDrawerUiState(isLoading = true)
             repository.getAllTopicHistory().collect { history ->
-                _chatHistoryDrawerUiState.value = ChatHistoryDrawerUiState(
-                    historyItems = history
+                _topicHistoryDrawerUiState.value = TopicHistoryDrawerUiState(
+                    topicHistoryItems = history
                 )
             }
         }
@@ -65,39 +65,39 @@ class ChatViewModel @Inject constructor(
 
     fun getGptResponse(userMessage: String) {
         viewModelScope.launch(context = dispatcher) {
-            _chatScreenUiState.value = ChatScreenUiState(isLoading = true)
+            _topicScreenUiState.value = TopicScreenUiState(isLoading = true)
             val result = repository.getGptResponse(topic = userMessage)
             if (result.isSuccess && result.getOrNull() != null) {
                 val fullResponse = requireNotNull(result.getOrNull()!!)
-                _chatScreenUiState.value = ChatScreenUiState(
-                    chat = Chat(
+                _topicScreenUiState.value = TopicScreenUiState(
+                    chat = Topic(
                         subject = userMessage,
                         aiAnswer = fullResponse.aiResponse,
                         timeStamp = fullResponse.timestamp
                     )
                 )
-                saveChat(
+                saveTopic(
                     userMessage = userMessage,
                     aiResponse = fullResponse.aiResponse,
                     timeStamp = fullResponse.timestamp
                 )
             } else {
-                _chatScreenUiState.value = ChatScreenUiState(isError = true)
+                _topicScreenUiState.value = TopicScreenUiState(isError = true)
             }
         }
     }
 
-    fun saveChat(userMessage: String, aiResponse: String, timeStamp: Long) {
+    fun saveTopic(userMessage: String, aiResponse: String, timeStamp: Long) {
         viewModelScope.launch(context = dispatcher) {
-            _chatScreenUiState.value = ChatScreenUiState(isLoading = true)
+            _topicScreenUiState.value = TopicScreenUiState(isLoading = true)
             val historyItem = HistoryItem(
                 userMessage = userMessage,
                 aiResponse = aiResponse,
                 timestamp = timeStamp
             )
             repository.insertTopic(historyItem = historyItem)
-            _chatScreenUiState.value = ChatScreenUiState(
-                chat = Chat(
+            _topicScreenUiState.value = TopicScreenUiState(
+                chat = Topic(
                     subject = userMessage,
                     aiAnswer = aiResponse,
                     timeStamp = timeStamp
