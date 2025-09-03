@@ -56,6 +56,7 @@ fun ChatScreen(
         subject = subject
     )
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChatScreenContent(
@@ -74,13 +75,13 @@ private fun ChatScreenContent(
         chatHistory.chatHistory
             .sortedBy { it.timestamp }
             .flatMap { item ->
-                listOf(
-                    ChatMessage(Role.User, item.userMessage),
-                    ChatMessage(Role.Assistant, item.aiResponse)
-                )
+                buildList {
+                    if (item.userMessage.isNotBlank()) add(ChatMessage(Role.User, item.userMessage))
+                    if (item.aiResponse.isNotBlank()) add(ChatMessage(Role.Assistant, item.aiResponse))
+                }
             }
     }
-
+    val isGenericSubject = subject.isBlank() || subject.equals("Geral", ignoreCase = true)
     var isTyping by remember { mutableStateOf(false) }
 
     LaunchedEffect(chatScreenUiState.chat.aiAnswer) {
@@ -107,7 +108,7 @@ private fun ChatScreenContent(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(if (subject.isNotEmpty()) "Assunto: $subject" else "Learn Everything Bot")
+                        Text(if (isGenericSubject) "Learn Everything Bot" else "Assunto: ${subject.trim()}")
                     },
                     navigationIcon = {
                         IconButton(onClick = {
@@ -120,15 +121,12 @@ private fun ChatScreenContent(
                 )
             },
             bottomBar = {
-                if (subject.isNotEmpty()) {
-                    MessageInputBar(
-                        onMessageSend = { userText ->
-                            // não mexe no histórico local; deixa o Room atualizar
-                            isTyping = true
-                            onGetGptResponse(userText)
-                        }
-                    )
-                }
+                MessageInputBar(
+                    onMessageSend = { userText ->
+                        isTyping = true
+                        onGetGptResponse(userText)
+                    }
+                )
             }
         ) { inner ->
             Box(

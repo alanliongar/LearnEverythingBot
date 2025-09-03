@@ -23,7 +23,7 @@ fun LearnEverythingApp(innerPadding: PaddingValues) {
             arguments = listOf(
                 navArgument("subject") {
                     type = NavType.StringType
-                    defaultValue = "Geral"   // valor padrão
+                    defaultValue = ""   // valor padrão
                 }
             )
         ) { backStackEntry ->
