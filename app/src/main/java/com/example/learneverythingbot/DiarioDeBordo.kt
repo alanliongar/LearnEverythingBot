@@ -50,7 +50,7 @@ Dia 25/08/2025 - Daily - Alan e André:
 */
 
 /*
-Dia 26/05/2025 - Nao tivemos daily, mas conseguimos desenvolver bem o app
+Dia 26/08/2025 - Nao tivemos daily, mas conseguimos desenvolver bem o app
     1 - Injecao de dependencia com Dagger/Hilt
     2 - Criacao da tela de quiz
     3 - Criacao completa do viewmodel
@@ -58,6 +58,21 @@ Dia 26/05/2025 - Nao tivemos daily, mas conseguimos desenvolver bem o app
                      integrar o projeto e torná-lo funcional
                      escrever testes unitarios
                      escrever testes de UI compose
-
-
 */
+
+/*
+Dia 27/08/2025 a 01/09/2025 - Não tivemos daily nesse período. Ampliação do prazo de entrega em 1 semana.
+*/
+
+/*
+Dia 02/09/2025 - Tivemos uma reunião às 19:00 BRT até 20:30 BRT para realinhamento
+1 - Como o MVP já ficou pronto, definimos a criação de mais funcionalidades (Resumo e tornar quiz robusto).
+1.1 - André ficará com o resumo (chamada pra IA + inserção no room database)
+1.2 - Oscar ficará com o quiz (chamada pra IA + inserção no room database)
+**Alan: Quero que ambos tenham prática com a integração com a openAi, além disso devem trabalhar entre eles pra praticar o trabalho em equipe.
+Tudo atualizado no trello em cards separados e as responsabilidades definidas. Responsabilidades compartilhadas exigem comunicação (trabalho em equipe).
+2 - Removeremos a carinha de chat, vamos colocar botões clicáveis para o usuário clicar e navegar pra tela de resumo do conteúdo.
+**O apontamento da falta da existencia de um conteúdo foi muito bem feita pelo André, ele se preocupou com a UX.
+--Seguiremos anotando nesse documento os fatos importantes.
+*/
+
