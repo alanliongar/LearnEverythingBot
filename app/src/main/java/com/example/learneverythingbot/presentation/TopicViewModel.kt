@@ -7,6 +7,7 @@ import com.example.learneverythingbot.di.DispatcherIO
 import com.example.learneverythingbot.domain.model.HistoryItem
 import com.example.learneverythingbot.domain.model.Topic
 import com.example.learneverythingbot.domain.model.TopicHistoryDrawerUiState
+import com.example.learneverythingbot.domain.model.TopicItem
 import com.example.learneverythingbot.domain.model.TopicScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -61,6 +62,24 @@ class TopicViewModel @Inject constructor(
         viewModelScope.launch(context = dispatcher) {
             repository.deleteAllTopic()
         }
+    }
+
+    fun parseTopics(response: String): List<TopicItem> {
+        return response.lines()
+            .filter { it.isNotBlank() }
+            .map { line ->
+                val trimmed = line.trim()
+                val level = when {
+                    Regex("^\\d+\\.\\d+").containsMatchIn(trimmed) -> 1
+                    Regex("^\\d+\\.").containsMatchIn(trimmed) -> 0
+                    else -> 0
+                }
+                val cleanedTitle = trimmed
+                    .replaceFirst(Regex("^\\d+(\\.\\d+)?\\s*"), "") // remove prefixo "1." ou "1.2"
+                    .replaceFirst(Regex("^\\.\\s*"), "") // remove "." isolado no início
+                    .trim()
+                TopicItem(title = cleanedTitle, level = level)
+            }
     }
 
     fun getGptResponse(userMessage: String) {
