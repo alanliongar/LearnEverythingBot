@@ -70,7 +70,6 @@ private fun ChatScreenContent(
     onGetGptResponse: (String) -> Unit,
     subject: String,
 ) {
-    // 1) Deriva mensagens do histórico (fonte de verdade = Room)
     val historyMessages = remember(chatHistory.chatHistory) {
         chatHistory.chatHistory
             .sortedBy { it.timestamp }
@@ -82,10 +81,8 @@ private fun ChatScreenContent(
             }
     }
 
-    // 2) Apenas controla o placeholder "Digitando..."
     var isTyping by remember { mutableStateOf(false) }
 
-    // Quando chega uma resposta (aiAnswer preenchido), removemos o "Digitando..."
     LaunchedEffect(chatScreenUiState.chat.aiAnswer) {
         if (chatScreenUiState.chat.aiAnswer.isNotBlank()) {
             isTyping = false
