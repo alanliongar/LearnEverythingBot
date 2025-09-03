@@ -234,19 +234,24 @@ fun ChatScreenPreviewWithMessages() {
             id = 1,
             userMessage = "Kotlin",
             aiResponse =
-                "Introdução ao Kotlin\n" +
-                        "├── Fundamentos do Kotlin\n" +
-                        "├── Estruturas de Controle\n" +
-                        "├── Funções\n" +
-                        "├── Classes e Objetos\n" +
-                        "├── Herança e Interfaces\n" +
-                        "├── Tratamento de Exceções\n" +
-                        "├── Coleções em Kotlin\n" +
-                        "├── Funções de Ordem Superior\n" +
-                        "├── Programação Orientada a Eventos\n" +
-                        "├── Corotinas\n" +
-                        "├── Testes em Kotlin\n" +
-                        "├── Frameworks e Bibliotecas em Kotlin",
+                "1. Introdução ao Kotlin\n" +
+                        "   1.1 História e propósito\n" +
+                        "   1.2 Características principais\n" +
+                        "2. Sintaxe do Kotlin\n" +
+                        "   2.1 Variáveis e tipos de dados\n" +
+                        "   2.2 Estruturas de controle\n" +
+                        "3. Funcionalidades avançadas do Kotlin\n" +
+                        "   3.1 Funções de extensão\n" +
+                        "   3.2 Null safety\n" +
+                        "4. Programação Orientada a Objetos em Kotlin\n" +
+                        "   4.1 Classes e objetos\n" +
+                        "   4.2 Herança e interfaces\n" +
+                        "5. Programação Funcional em Kotlin\n" +
+                        "   5.1 Funções de alta ordem\n" +
+                        "   5.2 Lambdas\n" +
+                        "6. Kotlin para desenvolvimento Android\n" +
+                        "   6.1 Vantagens do uso de Kotlin no desenvolvimento Android\n" +
+                        "   6.2 Integração com o Android Studio",
             timestamp = System.currentTimeMillis()
         )
     )
