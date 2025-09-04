@@ -1,9 +1,6 @@
 ﻿package com.example.learneverythingbot.presentation.screen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,48 +34,46 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.learneverythingbot.components.ChatHistoryDrawer
-import com.example.learneverythingbot.domain.model.ChatHistoryDrawerUiState
-import com.example.learneverythingbot.domain.model.ChatMessage
-import com.example.learneverythingbot.domain.model.ChatScreenUiState
 import com.example.learneverythingbot.domain.model.HistoryItem
-import com.example.learneverythingbot.domain.model.Role
 import com.example.learneverythingbot.domain.model.TopicHistoryDrawerUiState
 import com.example.learneverythingbot.domain.model.TopicItem
 import com.example.learneverythingbot.domain.model.TopicScreenUiState
 import com.example.learneverythingbot.presentation.TopicViewModel
 import com.example.learneverythingbot.presentation.screen.components.MessageInputBar
-import com.example.learneverythingbot.screen.AssistantText
-import com.example.learneverythingbot.screen.UserBubble
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun TopicScreen(
-    subject: String,
+    navController: NavController,
     topicViewModel: TopicViewModel = hiltViewModel()
 ) {
     val chatHistory by topicViewModel.topicHistoryDrawerUiState.collectAsState()
     val chatScreenUiState by topicViewModel.topicScreenUiState.collectAsState()
     val drawerVisible by topicViewModel.drawerVisible.collectAsState()
+    val parsedTopics by topicViewModel.parsedTopics.collectAsState()
+
     val drawerState =
         rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
     TopicScreenContent(
         topicScreenUiState = chatScreenUiState,
+        parsedTopics = parsedTopics,
         drawerState = drawerState,
         topicHistory = chatHistory,
         coroutineScope = coroutineScope,
+        onDrawerItemSelected = {
+            topicViewModel.parseHistoryItem(it)
+        },
         onHideDrawer = { topicViewModel.hideDrawer() },
         onShowDrawer = { topicViewModel.showDrawer() },
         onDeleteTopic = { topicViewModel.deleteChat(it) },
         onDeleteAllTopic = { topicViewModel.deleteAllChat() },
         onGetGptResponse = { topicViewModel.getGptResponse(it) },
-        subject = subject
     )
-
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,38 +81,40 @@ fun TopicScreen(
 private fun TopicScreenContent(
     modifier: Modifier = Modifier,
     topicScreenUiState: TopicScreenUiState,
+    parsedTopics: List<TopicItem>,
     drawerState: DrawerState,
     topicHistory: TopicHistoryDrawerUiState,
     coroutineScope: CoroutineScope,
+    onDrawerItemSelected: (HistoryItem) -> Unit,
     onHideDrawer: () -> Unit,
     onShowDrawer: () -> Unit,
     onDeleteTopic: (Int) -> Unit,
     onDeleteAllTopic: () -> Unit,
     onGetGptResponse: (String) -> Unit,
-    subject: String,
 ) {
-    val historyMessages = remember(topicHistory.topicHistoryItems) {
-        topicHistory.topicHistoryItems
-            .sortedBy { it.timestamp }
-            .flatMap { item ->
-                buildList {
-                    if (item.userMessage.isNotBlank()) add(ChatMessage(Role.User, item.userMessage))
-                    if (item.aiResponse.isNotBlank()) add(
-                        ChatMessage(
-                            Role.Assistant,
-                            item.aiResponse
-                        )
-                    )
-                }
-            }
+    var currentSubject: String by remember { mutableStateOf("") }
+    var isGenericSubject: Boolean by remember {
+        mutableStateOf(
+            currentSubject.isBlank() || currentSubject.equals(
+                "Geral",
+                ignoreCase = true
+            )
+        )
     }
-    val isGenericSubject = subject.isBlank() || subject.equals("Geral", ignoreCase = true)
     var isTyping by remember { mutableStateOf(false) }
+    var messageSent by remember { mutableStateOf(false) }
 
     LaunchedEffect(topicScreenUiState.chat.aiAnswer) {
-        if (topicScreenUiState.chat.aiAnswer.isNotBlank()) {
+        val answer = topicScreenUiState.chat.aiAnswer
+        if (answer.isNotBlank()) {
             isTyping = false
+            messageSent = true
         }
+    }
+
+    LaunchedEffect(currentSubject, isGenericSubject) {
+        isGenericSubject =
+            currentSubject.isBlank() || currentSubject.equals("Geral", ignoreCase = true)
     }
 
     ModalNavigationDrawer(
@@ -125,9 +122,11 @@ private fun TopicScreenContent(
         drawerContent = {
             ChatHistoryDrawer(
                 allChats = topicHistory.topicHistoryItems,
-                onChatSelected = {
+                onChatSelected = { selected ->
                     onHideDrawer()
                     coroutineScope.launch { drawerState.close() }
+                    currentSubject = selected.userMessage
+                    onDrawerItemSelected.invoke(selected)
                 },
                 onChatDeleted = { onDeleteTopic(it.id) },
                 onClearAll = { onDeleteAllTopic() }
@@ -138,7 +137,7 @@ private fun TopicScreenContent(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(if (isGenericSubject) "Learn Everything Bot" else "Assunto: ${subject.trim()}")
+                        Text(if (isGenericSubject) "Learn Everything Bot" else "Assunto: ${currentSubject.trim()}")
                     },
                     navigationIcon = {
                         IconButton(onClick = {
@@ -151,45 +150,49 @@ private fun TopicScreenContent(
                 )
             },
             bottomBar = {
-                MessageInputBar(
-                    onMessageSend = { userText ->
-                        isTyping = true
-                        onGetGptResponse(userText)
-                    }
-                )
+                if (!messageSent) {
+                    MessageInputBar(
+                        onMessageSend = { userText ->
+                            isTyping = true
+                            onGetGptResponse(userText)
+                            currentSubject = userText
+                        }
+                    )
+                }
             }
         ) { inner ->
             Box(
-                Modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(inner)
             ) {
-                val uiMessages = if (isTyping)
-                    historyMessages + ChatMessage(Role.Assistant, "Digitando...")
-                else historyMessages
+                when {
+                    isTyping -> {
+                        Text(
+                            text = "Gerando estrutura de tópicos...",
+                            modifier = Modifier.align(Alignment.Center),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
 
-                if (uiMessages.isEmpty()) {
-                    Text(
-                        text = stringResource(id = com.example.learneverythingbot.R.string.initial_prompt),
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(top = 12.dp, bottom = 100.dp)
-                    ) {
-                        items(uiMessages) { msg ->
-                            when (msg.role) {
-                                Role.User -> UserBubble(msg.text)
-                                Role.Assistant -> AssistantText(msg.text)
-                            }
-                        }
+                    parsedTopics.isNotEmpty() -> {
+                        TopicList(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 12.dp, vertical = 16.dp),
+                            topics = parsedTopics,
+                            onClick = { /* Ação de navegação pra tela de resumo */ }
+                        )
+                    }
+
+                    else -> {
+                        Text(
+                            text = stringResource(id = com.example.learneverythingbot.R.string.initial_prompt),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(16.dp),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
                     }
                 }
             }
@@ -198,11 +201,15 @@ private fun TopicScreenContent(
 }
 
 @Composable
-fun TopicList(modifier: Modifier, topics: List<TopicItem>, onClick: (TopicItem) -> Unit) {
-    Column(modifier = modifier) {
-        topics.forEach { topic ->
+fun TopicList(
+    modifier: Modifier,
+    topics: List<TopicItem>,
+    onClick: (TopicItem) -> Unit
+) {
+    LazyColumn(modifier = modifier) {
+        items(topics) { topic ->
             Button(
-                onClick = { onClick(topic) },
+                onClick = { onClick.invoke(topic) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = (topic.level * 16).dp, top = 4.dp, bottom = 4.dp)
@@ -255,19 +262,27 @@ fun ChatScreenPreviewWithMessages() {
             timestamp = System.currentTimeMillis()
         )
     )
+    val parsedTopics: List<TopicItem> = listOf(
+        TopicItem(title = "Kotlin", level = 0),
+        TopicItem(title = "Sintaxe Básica", level = 1),
+        TopicItem(title = "Funções", level = 1),
+        TopicItem(title = "Lambdas", level = 2),
+        TopicItem(title = "Coroutines", level = 1)
+    )
 
     MaterialTheme {
         TopicScreenContent(
             topicScreenUiState = TopicScreenUiState(),
+            parsedTopics = parsedTopics,
             drawerState = rememberDrawerState(DrawerValue.Closed),
             topicHistory = TopicHistoryDrawerUiState(fakeHistoryItem),
             coroutineScope = rememberCoroutineScope(),
+            onDrawerItemSelected = {},
             onHideDrawer = {},
             onShowDrawer = {},
             onDeleteTopic = {},
             onDeleteAllTopic = {},
             onGetGptResponse = {},
-            subject = "Kotlin"
         )
     }
 }

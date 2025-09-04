@@ -20,9 +20,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    LearnEverythingApp(
-                        innerPadding = innerPadding
-                    )
+                    LearnEverythingNavigation()
                 }
             }
         }

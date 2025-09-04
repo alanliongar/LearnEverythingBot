@@ -31,6 +31,11 @@ class TopicViewModel @Inject constructor(
         MutableStateFlow(TopicHistoryDrawerUiState())
     val topicHistoryDrawerUiState: StateFlow<TopicHistoryDrawerUiState> = _topicHistoryDrawerUiState
 
+    private val _parsedTopics: MutableStateFlow<List<TopicItem>> =
+        MutableStateFlow<List<TopicItem>>(emptyList())
+
+    val parsedTopics: StateFlow<List<TopicItem>> = _parsedTopics
+
     init {
         viewModelScope.launch(context = dispatcher) {
             _topicHistoryDrawerUiState.value = TopicHistoryDrawerUiState(isLoading = true)
@@ -64,8 +69,12 @@ class TopicViewModel @Inject constructor(
         }
     }
 
-    fun parseTopics(response: String): List<TopicItem> {
-        return response.lines()
+    fun parseHistoryItem(historyItem: HistoryItem) {
+        _parsedTopics.value = parseTopics(historyItem.aiResponse)
+    }
+
+    private fun parseTopics(response: String): List<TopicItem> {
+        return if (response != "") response.lines()
             .filter { it.isNotBlank() }
             .map { line ->
                 val trimmed = line.trim()
@@ -79,7 +88,7 @@ class TopicViewModel @Inject constructor(
                     .replaceFirst(Regex("^\\.\\s*"), "") // remove "." isolado no início
                     .trim()
                 TopicItem(title = cleanedTitle, level = level)
-            }
+            } else emptyList()
     }
 
     fun getGptResponse(userMessage: String) {
@@ -95,6 +104,7 @@ class TopicViewModel @Inject constructor(
                         timeStamp = fullResponse.timestamp
                     )
                 )
+                _parsedTopics.value = parseTopics(fullResponse.aiResponse)
                 saveTopic(
                     userMessage = userMessage,
                     aiResponse = fullResponse.aiResponse,
