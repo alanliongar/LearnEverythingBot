@@ -8,6 +8,7 @@ import com.example.learneverythingbot.domain.model.Chat
 import com.example.learneverythingbot.domain.model.ChatHistory
 import com.example.learneverythingbot.domain.model.ChatHistoryDrawerUiState
 import com.example.learneverythingbot.domain.model.ChatScreenUiState
+import com.example.learneverythingbot.domain.model.SubTopics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -88,6 +89,53 @@ class ChatViewModel @Inject constructor(
                 println("Erro ao carregar histórico: ${e.message}")
             }
         }
+    }
+
+
+    fun extractSubTopicsFromResponse(response: String, topic: String): List<SubTopics> {
+        val subTopics = mutableListOf<SubTopics>()
+        val lines = response.split("\n")
+
+        lines.forEach { line ->
+            if (line.trim().isNotEmpty() && !line.startsWith("Topico/assunto")) {
+                val level = countIndentationLevel(line)
+                val title = extractTitle(line)
+
+                if (title.isNotBlank() && !title.contains("├──") && !title.contains("└──") && !title.contains("│")) {
+                    subTopics.add(SubTopics(
+                        parentTopic = topic,
+                        title = title,
+                        level = level
+                    ))
+                }
+            }
+        }
+        return subTopics
+    }
+
+    private fun countIndentationLevel(line: String): Int {
+        return when {
+            line.startsWith("        ") -> 3 // 8 espaços - nível 3
+            line.startsWith("    ") -> 2 // 4 espaços - nível 2
+            line.startsWith("  ") -> 1 // 2 espaços - nível 1
+            else -> 0 // Sem indentação - nível 0
+        }
+    }
+
+    private fun extractTitle(line: String): String {
+        return line.trim().replace(Regex("^[├└│\\s─]*"), "").trim()
+    }
+
+
+    private fun handleGptResponse(response: String, originalTopic: String) {
+        val subTopics = extractSubTopicsFromResponse(response, originalTopic)
+
+        _chatScreenUiState.value = _chatScreenUiState.value.copy(
+            chat = Chat(originalTopic, response),
+            isLoading = false
+        )
+
+
     }
 
     fun loadChatById(id: Int) {

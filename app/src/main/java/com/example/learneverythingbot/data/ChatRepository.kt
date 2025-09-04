@@ -33,6 +33,16 @@ class ChatRepository @Inject constructor(
         }
     }
 
+
+
+    suspend fun getSubTopicSummary(topic: String, subTopic: String): Result<String> {
+        return try{
+            remote.getSubTopicSummary(topic, subTopic)
+        }catch (e: Exception){
+            Result.failure(Exception(e.message ?: "Erro ao buscar resumo do subtopico"))
+        }
+    }
+
     suspend fun insertChat(chatHistory: ChatHistory) {
         local.insertChatHistory(chatHistory = chatHistory)
     }

@@ -9,10 +9,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.learneverythingbot.presentation.screen.ChatHistoryDetailScreen
 import com.example.learneverythingbot.presentation.screen.IntroScreen
+import com.example.learneverythingbot.presentation.screen.SubTopicDetailScreen
 import com.example.learneverythingbot.screen.ChatScreen
 
 @Composable
-fun LearnEverythingApp(innerPadding: PaddingValues) {
+fun LearnEverythingNavigation(innerPadding: PaddingValues) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "introScreen") {
 
@@ -49,5 +50,17 @@ fun LearnEverythingApp(innerPadding: PaddingValues) {
                 onBackClick = { navController.popBackStack() }
             )
         }
+
+        composable("subTopicDetail/{topic}/{subTopic}") { backStackEntry ->
+            val topic = backStackEntry.arguments?.getString("topic")
+            val subTopic = backStackEntry.arguments?.getString("subTopic")
+            SubTopicDetailScreen(
+                topic = topic,
+                subTopic = subTopic,
+                navController = navController
+            )
+        }
+
+
     }
 }

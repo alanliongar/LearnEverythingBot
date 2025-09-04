@@ -1,5 +1,6 @@
 ﻿package com.example.learneverythingbot.data.remote
 
+import android.util.Log
 import com.example.learneverythingbot.data.model.Message
 import com.example.learneverythingbot.data.model.OpenAiRequest
 import com.example.learneverythingbot.data.remote.retrofit.OpenAiService
@@ -7,7 +8,7 @@ import javax.inject.Inject
 
 class ChatRemoteDataSource @Inject constructor(
     private val openAiService: OpenAiService
-): RemoteDataSource {
+) : RemoteDataSource {
     override suspend fun learnChatTopicGptResponse(topic: String): Result<String> {
         val prompt =
             """
@@ -53,6 +54,42 @@ class ChatRemoteDataSource @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(Exception("🚨 Unexpected error: ${e.localizedMessage ?: "Unknown error"}"))
+        }
+    }
+
+    override suspend fun getSubTopicSummary(
+        topic: String,
+        subTopic: String
+    ): Result<String> {
+        val prompt = """
+        Forneça um resumo conciso e direto sobre '$subTopic' no contexto de '$topic'.
+        Inclua os conceitos principais, aplicações práticas e pontos-chave para compreensão.
+        Seja objetivo e direto ao ponto. Máximo de 300 palavras.
+        
+      
+    """.trimIndent()
+
+
+        Log.d("ChatRemoteDataSource", "Prompt: $prompt  $topic  $subTopic")
+
+        val request = OpenAiRequest(
+            messages = listOf(
+                Message("system", "Você é um especialista em fornecer resumos claros e objetivos."),
+                Message("user", prompt)
+            )
+        )
+
+        return try {
+            val response = openAiService.getLearningTopics(request)
+            if (response.isSuccessful) {
+                val content = response.body()?.choices?.firstOrNull()?.message?.content
+                    ?: "Conteúdo não disponível."
+                Result.success(content)
+            } else {
+                Result.failure(Exception("Erro na requisição do subtópico: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Erro inesperado: ${e.message}"))
         }
     }
 }

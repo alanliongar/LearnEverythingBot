@@ -1,4 +1,4 @@
-﻿package com.example.learneverythingbot
+﻿package com.example.learneverythingbot.di
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
