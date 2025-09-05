@@ -30,7 +30,7 @@ fun SubTopicButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = padding, top = 4.dp, bottom = 4.dp),
+            .padding(start = padding),
         colors = ButtonDefaults.textButtonColors(
             contentColor = MaterialTheme.colorScheme.primary
         )
