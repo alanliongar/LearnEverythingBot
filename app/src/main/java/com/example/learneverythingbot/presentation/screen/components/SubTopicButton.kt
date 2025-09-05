@@ -12,7 +12,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.learneverythingbot.domain.model.SubTopics
 
-// components/SubTopicButton.kt
+
 @Composable
 fun SubTopicButton(
     subTopic: SubTopics,
@@ -30,13 +30,13 @@ fun SubTopicButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = padding),
+            .padding(start = padding, top = 4.dp, bottom = 4.dp),
         colors = ButtonDefaults.textButtonColors(
             contentColor = MaterialTheme.colorScheme.primary
         )
     ) {
         Text(
-            text = "• $subTopic.title", // Adiciona um bullet point
+            text = "• ${subTopic.title}",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth()
