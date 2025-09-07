@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
@@ -29,7 +28,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -43,7 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,70 +48,124 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.learneverythingbot.R
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
+
+import com.example.learneverythingbot.presentation.quiz.QuizViewModel
+import com.example.learneverythingbot.presentation.screen.components.ErrorComponent
+import com.example.learneverythingbot.presentation.screen.components.LoadingComponent
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuizScreen(onBackClick: () -> Unit) {
-    var currentScreen by remember { mutableStateOf("topics") }
-    var selectedTopic by remember { mutableStateOf<Topic?>(null) }
+fun QuizScreen(topic: Topic, onFinishQuiz: () -> Unit) {
+    val viewModel: QuizViewModel = viewModel()
+    val questions by viewModel.questions.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = when (currentScreen) {
-                            "topics" -> "Tópicos de Aprendizagem"
-                            "quiz" -> selectedTopic?.name ?: "Quiz"
-                            "results" -> "Resultados"
-                            else -> "Quiz"
-                        },
-                        color = colorResource(id = R.color.text_on_primary),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        when (currentScreen) {
-                            "topics" -> onBackClick()
-                            "quiz" -> currentScreen = "topics"
-                            "results" -> currentScreen = "topics"
+    var currentQuestionIndex by remember { mutableStateOf(0) }
+    var selectedAnswer by remember { mutableStateOf<Int?>(null) }
+    var score by remember { mutableStateOf(0) }
+
+    // Cargar preguntas al iniciar la pantalla
+    LaunchedEffect(topic) {
+        if (questions.isEmpty()) {
+            viewModel.generateQuestions(topic)
+        }
+    }
+
+    // Reiniciar cuando cambia el topic
+    LaunchedEffect(topic) {
+        currentQuestionIndex = 0
+        selectedAnswer = null
+        score = 0
+        viewModel.clearQuestions()
+        viewModel.generateQuestions(topic)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+    ) {
+        when {
+            isLoading -> {
+                LoadingComponent()
+            }
+            error != null -> {
+                ErrorComponent(
+                    error = error!!,
+                    onRetry = { viewModel.generateQuestions(topic) }
+                )
+            }
+            questions.isNotEmpty() -> {
+                // Header con progresso
+                QuizProgressHeader(
+                    currentQuestion = currentQuestionIndex + 1,
+                    totalQuestions = questions.size,
+                    difficulty = topic.difficulty
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Pergunta
+                Text(
+                    text = questions[currentQuestionIndex].text,
+                    color = colorResource(id = R.color.text_on_primary),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 28.sp,
+                    modifier = Modifier.padding(bottom = 32.dp)
+                )
+
+                // Opções de resposta
+                questions[currentQuestionIndex].options.forEachIndexed { index, option ->
+                    AnswerOption(
+                        option = option,
+                        index = index,
+                        isSelected = selectedAnswer == index,
+                        onClick = {
+                            if (selectedAnswer == null) {
+                                selectedAnswer = index
+                                if (index == questions[currentQuestionIndex].correctAnswer) {
+                                    score++
+                                }
+                            }
                         }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Voltar",
-                            tint = colorResource(id = R.color.text_on_primary)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                // Botão de próximo
+                if (selectedAnswer != null) {
+                    Spacer(modifier = Modifier.height(28.dp))
+                    Button(
+                        onClick = {
+                            if (currentQuestionIndex + 1 < questions.size) {
+                                currentQuestionIndex++
+                                selectedAnswer = null
+                            } else {
+                                onFinishQuiz()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(id = R.color.secondary),
+                            contentColor = colorResource(id = R.color.text_on_secondary)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text(
+                            text = if (currentQuestionIndex + 1 < questions.size) "Próxima Pergunta" else "Ver Resultados",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.primary)
-                )
-            )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(colorResource(id = R.color.background_dark))
-        ) {
-            when (currentScreen) {
-                "topics" -> TopicSelectionScreen(
-                    onTopicSelected = { topic ->
-                        selectedTopic = topic
-                        currentScreen = "quiz"
-                    }
-                )
-                "quiz" -> QuestionScreen(
-                    topic = selectedTopic!!,
-                    onFinishQuiz = { currentScreen = "results" }
-                )
-                "results" -> ResultsScreen(
-                    onRetry = { currentScreen = "quiz" },
-                    onNewTopic = { currentScreen = "topics" }
-                )
+                }
             }
         }
     }

@@ -31,7 +31,10 @@ fun LearnEverythingApp(innerPadding: PaddingValues) {
             ChatScreen(subject = subject)
         }
         composable(route = "quizScreen") {
-            QuizScreen() {}
+            QuizScreen(
+                topic = TODO()  // ← ELIMINA ESTO
+            ) {}
+
         }
     }
 }
