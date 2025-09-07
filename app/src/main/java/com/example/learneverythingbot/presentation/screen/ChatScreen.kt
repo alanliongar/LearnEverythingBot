@@ -37,11 +37,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    subject: String,
+    initialSubject: String,
     navController: NavHostController,
     chatViewModel: ChatViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+
+    // ADICIONE ESTA LINHA
+    var currentSubject by remember { mutableStateOf(initialSubject) }
 
     val chatHistory by chatViewModel.chatHistoryDrawerUiState.collectAsState()
     val chatScreenUiState by chatViewModel.chatScreenUiState.collectAsState()
@@ -59,7 +62,7 @@ fun ChatScreen(
     LaunchedEffect(chatScreenUiState.chat.aiAnswer) {
         val answer = chatScreenUiState.chat.aiAnswer
         if (answer.isNotBlank()) {
-            val subTopics = SubTopicParser.parseResponse(answer, subject)
+            val subTopics = SubTopicParser.parseResponse(answer, currentSubject) // MUDEI AQUI
 
             val newMessage = if (messages.isNotEmpty() && messages.last().role == Role.Assistant) {
                 messages.dropLast(1) + ChatMessage(
@@ -89,11 +92,8 @@ fun ChatScreen(
         }
     }
 
-
-
     if (!chatScreenUiState.error.isNullOrEmpty()) {
         LaunchedEffect(chatScreenUiState.error) {
-            //TODO IMPLEMENTAR UM SNACKBAR PARA EXIBIR ERRO
             println("Erro: ${chatScreenUiState.error}")
         }
     }
@@ -120,8 +120,8 @@ fun ChatScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = if (subject.isNotEmpty())
-                                "Assunto: $subject"
+                            text = if (currentSubject.isNotEmpty()) // MUDEI AQUI
+                                "Assunto: $currentSubject" // MUDEI AQUI
                             else
                                 "Learn Everything Bot"
                         )
@@ -141,15 +141,19 @@ fun ChatScreen(
                 )
             },
             bottomBar = {
-                if (subject.isNotEmpty()) {
+                if (currentSubject.isNotEmpty()) { // MUDEI AQUI
                     MessageInputBar(
                         onMessageSend = { userText ->
+                            // ADICIONE ESTAS LINHAS
+                            if (messages.isEmpty() && currentSubject.isEmpty()) {
+                                currentSubject = userText.take(30)
+                            }
+
                             messages += ChatMessage(Role.User, userText)
                             messages += ChatMessage(Role.Assistant, "Digitando...")
                             chatViewModel.getGptResponse(userText)
-                        },
-
-                        )
+                        }
+                    )
                 }
             }
         ) { inner ->
@@ -179,22 +183,13 @@ fun ChatScreen(
                                 Role.User -> UserBubble(msg.text)
                                 Role.Assistant -> {
                                     Column {
-                                        AssistantText(msg.text)
                                         if (msg.subTopics.isNotEmpty()) {
                                             Spacer(modifier = Modifier.height(12.dp))
-                                            Text(
-                                                "Subtopicos para explorar:",
-                                                style = MaterialTheme.typography.labelMedium.copy(
-                                                    fontWeight = FontWeight.Bold
-                                                ),
-                                                color = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.padding(bottom = 8.dp)
-                                            )
                                             msg.subTopics.forEach { subTopic ->
                                                 SubTopicButton(
                                                     subTopic = subTopic,
                                                     onClick = {
-                                                        navController.navigate("subTopicDetail/${subject}/${subTopic.title}")
+                                                        navController.navigate("subTopicDetail/${currentSubject}/${subTopic.title}") // MUDEI AQUI
                                                     }
                                                 )
                                             }
@@ -205,7 +200,6 @@ fun ChatScreen(
                         }
                     }
 
-                    // Loading indicator
                     if (chatScreenUiState.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier
@@ -217,7 +211,4 @@ fun ChatScreen(
             }
         }
     }
-
-
 }
-

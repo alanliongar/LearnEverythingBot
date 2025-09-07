@@ -1,5 +1,7 @@
 ﻿package com.example.learneverythingbot
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
@@ -12,6 +14,7 @@ import com.example.learneverythingbot.presentation.screen.IntroScreen
 import com.example.learneverythingbot.presentation.screen.SubTopicDetailScreen
 import com.example.learneverythingbot.screen.ChatScreen
 
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
 fun LearnEverythingNavigation(innerPadding: PaddingValues) {
     val navController = rememberNavController()
@@ -31,7 +34,7 @@ fun LearnEverythingNavigation(innerPadding: PaddingValues) {
             )
         ) { backStackEntry ->
             val subject = backStackEntry.arguments?.getString("subject").orEmpty()
-            ChatScreen(subject = subject, navController = navController)
+            ChatScreen(initialSubject = subject, navController = navController)
         }
 
         composable(
