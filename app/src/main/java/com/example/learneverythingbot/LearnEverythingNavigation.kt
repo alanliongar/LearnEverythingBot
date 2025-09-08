@@ -80,7 +80,5 @@ fun LearnEverythingNavigation(innerPadding: PaddingValues) {
             )
             QuizScreen(topic = topic, navController = navController, onFinishQuiz = {})
         }
-
-
     }
 }
