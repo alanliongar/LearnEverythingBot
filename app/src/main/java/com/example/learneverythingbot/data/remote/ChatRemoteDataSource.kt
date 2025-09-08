@@ -72,9 +72,7 @@ class ChatRemoteDataSource @Inject constructor(
         Forneça um resumo conciso e direto sobre '$subTopic' no contexto de '$topic'.
         Inclua os conceitos principais, aplicações práticas e pontos-chave para compreensão.
         Seja objetivo e direto ao ponto. Máximo de 300 palavras.
-        
-      
-    """.trimIndent()
+        """.trimIndent()
 
 
         Log.d("ChatRemoteDataSource", "Prompt: $prompt  $topic  $subTopic")

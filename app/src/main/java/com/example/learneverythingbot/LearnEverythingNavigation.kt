@@ -2,7 +2,6 @@
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -19,7 +18,7 @@ import com.example.learneverythingbot.screen.ChatScreen
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
-fun LearnEverythingNavigation(innerPadding: PaddingValues) {
+fun LearnEverythingNavigation() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "introScreen") {
 
@@ -27,7 +26,7 @@ fun LearnEverythingNavigation(innerPadding: PaddingValues) {
             IntroScreen(navController = navController)
         }
 
-        /*composable(
+        composable(
             route = "chatScreen?subject={subject}",
             arguments = listOf(
                 navArgument("subject") {
@@ -38,21 +37,21 @@ fun LearnEverythingNavigation(innerPadding: PaddingValues) {
         ) { backStackEntry ->
             val subject = backStackEntry.arguments?.getString("subject").orEmpty()
             ChatScreen(initialSubject = subject, navController = navController)
-        }*/
+        }
 
         composable(
             route = "chatHistoryDetail?chatId={chatId}",
             arguments = listOf(
                 navArgument("chatId") {
                     type = NavType.IntType
-                    defaultValue = -1
+                    defaultValue = ""
                 }
             )
         ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getInt("chatId") ?: -1
+            val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
             println("Navegando para detalhes do chat ID: $chatId")
             ChatHistoryDetailScreen(
-                chatId = chatId,
+                chatUsrMsg = chatId,
                 onBackClick = { navController.popBackStack() }
             )
         }

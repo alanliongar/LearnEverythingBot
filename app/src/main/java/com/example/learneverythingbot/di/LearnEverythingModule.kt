@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.example.learneverythingbot.data.local.room.ChatHistoryDao
 import com.example.learneverythingbot.data.local.room.AppDatabase
+import com.example.learneverythingbot.data.local.room.TopicSummaryDao
 import com.example.learneverythingbot.data.remote.retrofit.RetrofitClient
 import dagger.Module
 import dagger.Provides
@@ -29,6 +30,11 @@ class LearnEverythingModule {
     @Provides
     fun providesChatHistoryDao(roomDatabase: AppDatabase): ChatHistoryDao {
         return roomDatabase.chatHistoryDao()
+    }
+
+    @Provides
+    fun providesTopicSummaryDao(roomDatabase: AppDatabase): TopicSummaryDao{
+        return roomDatabase.topicSummaryDao()
     }
 
     @Provides

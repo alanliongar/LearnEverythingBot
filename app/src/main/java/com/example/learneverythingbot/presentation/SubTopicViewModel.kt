@@ -1,4 +1,5 @@
 ﻿package com.example.learneverythingbot.presentation
+
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -31,12 +32,10 @@ class SubTopicViewModel @Inject constructor(
                 title = subTopic,
                 level = 0
             )
-
-            val result = chatRepository.getSubTopicSummary(topic, subTopic)
+            val result = chatRepository.getSecondGptResponse(topic, subTopic)
             _isLoading.value = false
-
             result.onSuccess { content ->
-                _subTopicContent.value = content
+                _subTopicContent.value = content.secondAiResponse
             }.onFailure {
                 _subTopicContent.value = "Erro ao carregar conteúdo: ${it.message}"
             }

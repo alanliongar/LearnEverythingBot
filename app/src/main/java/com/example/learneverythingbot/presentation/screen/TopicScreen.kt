@@ -30,11 +30,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHost
+import androidx.navigation.NavHostController
 import com.example.learneverythingbot.components.ChatHistoryDrawer
 import com.example.learneverythingbot.domain.model.ChatHistoryItem
 import com.example.learneverythingbot.domain.model.TopicHistoryDrawerUiState
@@ -47,7 +50,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TopicScreen(
-    navController: NavController,
+    navController: NavHostController,
     topicViewModel: TopicViewModel = hiltViewModel()
 ) {
     val chatHistory by topicViewModel.topicHistoryDrawerUiState.collectAsState()
@@ -60,6 +63,7 @@ fun TopicScreen(
     val coroutineScope = rememberCoroutineScope()
 
     TopicScreenContent(
+        navController = navController,
         topicScreenUiState = chatScreenUiState,
         parsedTopics = parsedTopics,
         drawerState = drawerState,
@@ -80,6 +84,7 @@ fun TopicScreen(
 @Composable
 private fun TopicScreenContent(
     modifier: Modifier = Modifier,
+    navController: NavHostController,
     topicScreenUiState: TopicScreenUiState,
     parsedTopics: List<TopicItem>,
     drawerState: DrawerState,
@@ -88,7 +93,7 @@ private fun TopicScreenContent(
     onDrawerItemSelected: (ChatHistoryItem) -> Unit,
     onHideDrawer: () -> Unit,
     onShowDrawer: () -> Unit,
-    onDeleteTopic: (Int) -> Unit,
+    onDeleteTopic: (String) -> Unit,
     onDeleteAllTopic: () -> Unit,
     onGetGptResponse: (String) -> Unit,
 ) {
@@ -128,7 +133,7 @@ private fun TopicScreenContent(
                     currentSubject = selected.userMessage
                     onDrawerItemSelected.invoke(selected)
                 },
-                onChatDeleted = { onDeleteTopic(it.id) },
+                onChatDeleted = { onDeleteTopic(it.userMessage) },
                 onClearAll = { onDeleteAllTopic() }
             )
         }
@@ -181,7 +186,9 @@ private fun TopicScreenContent(
                                 .fillMaxSize()
                                 .padding(horizontal = 12.dp, vertical = 16.dp),
                             topics = parsedTopics,
-                            onClick = { /* Ação de navegação pra tela de resumo */ }
+                            onClick = {
+                                navController.navigate("subTopicDetail/${topicScreenUiState.chat.subject}/${it.title}")
+                            }
                         )
                     }
 
@@ -238,7 +245,6 @@ fun TopicListPreview() {
 fun ChatScreenPreviewWithMessages() {
     val fakeChatHistoryItem = listOf(
         ChatHistoryItem(
-            id = 1,
             userMessage = "Kotlin",
             aiResponse =
                 "1. Introdução ao Kotlin\n" +
@@ -262,6 +268,7 @@ fun ChatScreenPreviewWithMessages() {
             timestamp = System.currentTimeMillis()
         )
     )
+    val navController = NavHostController(context = LocalContext.current)
     val parsedTopics: List<TopicItem> = listOf(
         TopicItem(title = "Kotlin", level = 0),
         TopicItem(title = "Sintaxe Básica", level = 1),
@@ -272,6 +279,7 @@ fun ChatScreenPreviewWithMessages() {
 
     MaterialTheme {
         TopicScreenContent(
+            navController = navController,
             topicScreenUiState = TopicScreenUiState(),
             parsedTopics = parsedTopics,
             drawerState = rememberDrawerState(DrawerValue.Closed),

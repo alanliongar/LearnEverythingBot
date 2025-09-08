@@ -3,6 +3,7 @@
 import com.example.learneverythingbot.data.local.LocalDataSource
 import com.example.learneverythingbot.data.remote.RemoteDataSource
 import com.example.learneverythingbot.domain.model.ChatHistoryItem
+import com.example.learneverythingbot.domain.model.SummaryItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -11,6 +12,45 @@ class ChatRepository @Inject constructor(
     private val local: LocalDataSource,
     private val remote: RemoteDataSource
 ) {
+    suspend fun getSecondGptResponse(topic: String, subTopic: String): Result<SummaryItem> {
+        val localSummary = local.getSummaryByTopicAndSubTopic(topic = topic, subTopic = subTopic)
+        if (localSummary != null && localSummary != "") {
+            val summaryitem = SummaryItem(
+                topic = topic, subTopic = subTopic, secondAiResponse = localSummary
+            )
+            return Result.success(summaryitem)
+        } else {
+            try {
+                val result = remote.getSubTopicSummary(topic = topic, subTopic = subTopic)
+                if (result.isSuccess) {
+                    val resultRemote = result.getOrNull()
+                    if (resultRemote != null) {
+                        val successfulResultRemote = SummaryItem(
+                            secondAiResponse = resultRemote,
+                            topic = topic,
+                            subTopic = subTopic
+                        )
+                        local.insertSummary(
+                            topic = topic,
+                            subTopic = subTopic,
+                            secondAiResponse = resultRemote
+                        )
+                        return Result.success(
+                            successfulResultRemote
+                        )
+                    } else {
+                        return Result.failure(Exception("Empty Response"))
+                    }
+                } else {
+                    return Result.failure(Exception("Something went wrong!"))
+                }
+
+            } catch (ex: Exception) {
+                return Result.failure(Exception(ex.message ?: "Unknown Error"))
+            }
+        }
+    }
+
     suspend fun getGptResponse(topic: String): Result<ChatHistoryItem> {
         return try {
             val result = remote.learnChatTopicGptResponse(topic = topic)
@@ -18,7 +58,6 @@ class ChatRepository @Inject constructor(
                 val remoteGptResponse = result.getOrNull() ?: ""
                 if (remoteGptResponse.isNotEmpty()) {
                     val chatHistoryItem = ChatHistoryItem(
-                        id = 0, // ID 0 para novo chat (Room irá auto-generate)
                         userMessage = topic,
                         aiResponse = remoteGptResponse
                     )
@@ -35,12 +74,12 @@ class ChatRepository @Inject constructor(
     }
 
     suspend fun getAllTopicHistory(): Flow<List<ChatHistoryItem>> {
-        val placeholder = ChatHistoryItem(0, "", "", System.currentTimeMillis())
+        val placeholder = ChatHistoryItem("", "", System.currentTimeMillis())
         return local.getAllChatHistory() //já vem do IO
             .map { list -> if (list.isEmpty()) listOf(placeholder) else list }
     }
 
-    suspend fun deleteAllTopic(){
+    suspend fun deleteAllTopic() {
         local.deleteAllTopic()
     }
 
@@ -48,21 +87,12 @@ class ChatRepository @Inject constructor(
         local.insertTopicHistory(chatHistoryItem = chatHistoryItem)
     }
 
-
-    suspend fun getSubTopicSummary(topic: String, subTopic: String): Result<String> {
-        return try {
-            remote.getSubTopicSummary(topic, subTopic)
-        } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "Erro ao buscar resumo do subtopico"))
-        }
-    }
-
     suspend fun insertChat(chatHistoryItem: ChatHistoryItem) {
         local.insertChatHistory(chatHistoryItem = chatHistoryItem)
     }
 
-    suspend fun deleteChat(id: Int) {
-        local.deleteChat(id = id)
+    suspend fun deleteChat(userMessage: String) {
+        local.deleteChat(topic = userMessage)
     }
 
     suspend fun deleteAllChat() {
@@ -73,7 +103,7 @@ class ChatRepository @Inject constructor(
         return local.getAllChatHistory()
     }
 
-    suspend fun getChatById(id: Int): ChatHistoryItem? {
-        return local.getChatById(id)
+    suspend fun getChatById(userMessage: String): ChatHistoryItem? {
+        return local.getChatByTopic(userMessage)
     }
 }

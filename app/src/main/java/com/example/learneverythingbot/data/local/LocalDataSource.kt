@@ -10,13 +10,17 @@ interface LocalDataSource {
 
     suspend fun deleteAllTopic()
 
-    suspend fun deleteTopic(id: Int)
+    suspend fun deleteTopic(topic: String)
 
     suspend fun getAllChatHistory(): Flow<List<ChatHistoryItem>>
 
     suspend fun deleteAllChat()
 
-    suspend fun deleteChat(id: Int)
+    suspend fun deleteChat(topic: String)
 
-    suspend fun getChatById(id: Int): ChatHistoryItem?
+    suspend fun getChatByTopic(topic: String): ChatHistoryItem?
+
+    suspend fun getSummaryByTopicAndSubTopic(topic: String, subTopic: String): String?
+
+    suspend fun insertSummary(topic: String, subTopic: String, secondAiResponse: String)
 }

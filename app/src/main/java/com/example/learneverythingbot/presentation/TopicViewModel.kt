@@ -59,7 +59,7 @@ class TopicViewModel @Inject constructor(
         _drawerVisible.value = false
     }
 
-    fun deleteChat(id: Int) {
+    fun deleteChat(userMessage: String) {
 
     }
 

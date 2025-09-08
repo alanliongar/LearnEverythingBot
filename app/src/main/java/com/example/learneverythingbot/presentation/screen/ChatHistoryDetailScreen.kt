@@ -36,14 +36,14 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatHistoryDetailScreen(
-    chatId: Int,
+    chatUsrMsg: String,
     onBackClick: () -> Unit,
     chatViewModel: ChatViewModel = hiltViewModel()
 ) {
     // CarregaR o chat específico
-    LaunchedEffect(chatId) {
-        if (chatId > 0) {
-            chatViewModel.loadChatById(chatId)
+    LaunchedEffect(chatUsrMsg) {
+        if (chatUsrMsg != "") {
+            chatViewModel.loadChatByUsrMsg(chatUsrMsg)
         }
     }
 
@@ -61,12 +61,12 @@ fun ChatHistoryDetailScreen(
         return
     }
 
-    if (currentChat == null || chatId <= 0) {
+    if (currentChat == null || chatUsrMsg == "") {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Chat não encontrado", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("ID: $chatId", style = MaterialTheme.typography.bodySmall)
+                Text("ID: $chatUsrMsg", style = MaterialTheme.typography.bodySmall)
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Volte e tente novamente", style = MaterialTheme.typography.bodyMedium)
             }

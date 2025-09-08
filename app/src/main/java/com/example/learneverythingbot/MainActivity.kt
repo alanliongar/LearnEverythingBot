@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LearnEverythingNavigation(innerPadding = androidx.compose.foundation.layout.PaddingValues())
+                    LearnEverythingNavigation()
                 }
             }
         }

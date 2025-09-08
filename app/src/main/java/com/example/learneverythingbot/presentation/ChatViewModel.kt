@@ -27,13 +27,14 @@ class ChatViewModel @Inject constructor(
     val chatScreenUiState: StateFlow<ChatScreenUiState> = _chatScreenUiState.asStateFlow()
 
     private val _chatHistoryDrawerUiState = MutableStateFlow(ChatHistoryDrawerUiState())
-    val chatHistoryDrawerUiState: StateFlow<ChatHistoryDrawerUiState> = _chatHistoryDrawerUiState.asStateFlow()
+    val chatHistoryDrawerUiState: StateFlow<ChatHistoryDrawerUiState> =
+        _chatHistoryDrawerUiState.asStateFlow()
 
     private val _drawerVisible = MutableStateFlow(false)
     val drawerVisible: StateFlow<Boolean> = _drawerVisible.asStateFlow()
 
-    private val _navigateToChatId = MutableStateFlow<Int?>(null)
-    val navigateToChatId: StateFlow<Int?> = _navigateToChatId.asStateFlow()
+    private val _navigateToChatUsrMsg = MutableStateFlow<String?>(null)
+    val navigateToChatUsrMsg: StateFlow<String?> = _navigateToChatUsrMsg.asStateFlow()
 
     private val _currentChat = MutableStateFlow<ChatHistoryItem?>(null)
     val currentChat: StateFlow<ChatHistoryItem?> = _currentChat.asStateFlow()
@@ -101,12 +102,17 @@ class ChatViewModel @Inject constructor(
                 val level = countIndentationLevel(line)
                 val title = extractTitle(line)
 
-                if (title.isNotBlank() && !title.contains("├──") && !title.contains("└──") && !title.contains("│")) {
-                    subTopics.add(SubTopics(
-                        parentTopic = topic,
-                        title = title,
-                        level = level
-                    ))
+                if (title.isNotBlank() && !title.contains("├──") && !title.contains("└──") && !title.contains(
+                        "│"
+                    )
+                ) {
+                    subTopics.add(
+                        SubTopics(
+                            parentTopic = topic,
+                            title = title,
+                            level = level
+                        )
+                    )
                 }
             }
         }
@@ -138,11 +144,11 @@ class ChatViewModel @Inject constructor(
 
     }
 
-    fun loadChatById(id: Int) {
+    fun loadChatByUsrMsg(userMessage: String) {
         viewModelScope.launch(dispatcher) {
             _isLoadingChat.value = true
             try {
-                val chat = chatRepository.getChatById(id)
+                val chat = chatRepository.getChatById(userMessage)
                 _currentChat.value = chat
             } catch (e: Exception) {
                 println("Erro ao carregar chat: ${e.message}")
@@ -161,20 +167,20 @@ class ChatViewModel @Inject constructor(
     }
 
     fun selectChat(chatHistoryItem: ChatHistoryItem) {
-        _navigateToChatId.value = chatHistoryItem.id
+        _navigateToChatUsrMsg.value = chatHistoryItem.userMessage
     }
 
     fun resetNavigation() {
-        _navigateToChatId.value = null
+        _navigateToChatUsrMsg.value = null
         _currentChat.value = null
     }
 
-    fun deleteChat(id: Int) {
+    fun deleteChat(userMessage: String) {
         viewModelScope.launch(dispatcher) {
-            chatRepository.deleteChat(id)
+            chatRepository.deleteChat(userMessage)
             loadChatHistory()
 
-            if (_currentChat.value?.id == id) {
+            if (_currentChat.value?.userMessage == userMessage) {
                 _currentChat.value = null
             }
         }

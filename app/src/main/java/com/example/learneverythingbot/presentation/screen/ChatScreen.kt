@@ -2,32 +2,24 @@ package com.example.learneverythingbot.screen
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.learneverythingbot.components.ChatHistoryDrawer
 import com.example.learneverythingbot.presentation.screen.components.MessageInputBar
 import com.example.learneverythingbot.domain.model.ChatMessage
 import com.example.learneverythingbot.domain.model.Role
-import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
 import com.example.learneverythingbot.presentation.ChatViewModel
-import com.example.learneverythingbot.presentation.screen.components.AssistantText
 import com.example.learneverythingbot.presentation.screen.components.SubTopicButton
 import com.example.learneverythingbot.presentation.screen.components.UserBubble
 import com.example.learneverythingbot.utils.SubTopicParser
@@ -41,15 +33,12 @@ fun ChatScreen(
     navController: NavHostController,
     chatViewModel: ChatViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-
-    // ADICIONE ESTA LINHA
     var currentSubject by remember { mutableStateOf(initialSubject) }
 
     val chatHistory by chatViewModel.chatHistoryDrawerUiState.collectAsState()
     val chatScreenUiState by chatViewModel.chatScreenUiState.collectAsState()
     val drawerVisible by chatViewModel.drawerVisible.collectAsState()
-    val navigateToChatId by chatViewModel.navigateToChatId.collectAsState()
+    val navigateToChatId by chatViewModel.navigateToChatUsrMsg.collectAsState()
 
     val drawerState =
         rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
@@ -80,7 +69,7 @@ fun ChatScreen(
 
     LaunchedEffect(navigateToChatId) {
         navigateToChatId?.let { chatId ->
-            if (chatId > 0) {
+            if (chatId != null && chatId != "") {
                 println("Navegando para chat ID: $chatId")
                 navController.navigate("chatHistoryDetail?chatId=$chatId")
                 chatViewModel.resetNavigation()
@@ -107,7 +96,7 @@ fun ChatScreen(
                     chatViewModel.selectChat(chatHistory)
                 },
                 onChatDeleted = { chatHistory ->
-                    chatViewModel.deleteChat(chatHistory.id)
+                    chatViewModel.deleteChat(chatHistory.userMessage)
                 },
                 onClearAll = {
                     chatViewModel.deleteAllChat()

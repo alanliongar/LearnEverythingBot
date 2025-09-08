@@ -6,10 +6,12 @@ import com.example.learneverythingbot.data.local.room.ChatHistoryDao
 import com.example.learneverythingbot.data.local.room.ChatHistoryEntity
 
 @Database(
-    entities = [ChatHistoryEntity::class],
+    entities = [ChatHistoryEntity::class, TopicSummaryEntity::class],
     version = 1,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chatHistoryDao(): ChatHistoryDao
+
+    abstract fun topicSummaryDao(): TopicSummaryDao
 }

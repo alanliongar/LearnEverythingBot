@@ -133,7 +133,6 @@ fun formatDate(timestamp: Long): String {
 fun PreviewChatHistoryItem() {
     ChatHistoryDrawerItem(
         chat = ChatHistoryItem(
-            id = 1,
             userMessage = "Olá, tudo bem?",
             aiResponse = "Olá! Como posso ajudar você hoje?",
             timestamp = System.currentTimeMillis()
@@ -149,7 +148,6 @@ fun PreviewChatHistoryItem() {
 fun PreviewChatHistoryItemLongText() {
     ChatHistoryDrawerItem(
         chat = ChatHistoryItem(
-            id = 1,
             userMessage = "Olá, tudo bem?",
             aiResponse = "Olá! Como posso ajudar você hoje?",
             timestamp = System.currentTimeMillis()
