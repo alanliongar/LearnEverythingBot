@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.learneverythingbot.data.ChatRepository
 import com.example.learneverythingbot.di.DispatcherIO
 import com.example.learneverythingbot.domain.model.Chat
-import com.example.learneverythingbot.domain.model.ChatHistory
+import com.example.learneverythingbot.domain.model.ChatHistoryItem
 import com.example.learneverythingbot.domain.model.ChatHistoryDrawerUiState
 import com.example.learneverythingbot.domain.model.ChatScreenUiState
 import com.example.learneverythingbot.domain.model.SubTopics
@@ -35,8 +35,8 @@ class ChatViewModel @Inject constructor(
     private val _navigateToChatId = MutableStateFlow<Int?>(null)
     val navigateToChatId: StateFlow<Int?> = _navigateToChatId.asStateFlow()
 
-    private val _currentChat = MutableStateFlow<ChatHistory?>(null)
-    val currentChat: StateFlow<ChatHistory?> = _currentChat.asStateFlow()
+    private val _currentChat = MutableStateFlow<ChatHistoryItem?>(null)
+    val currentChat: StateFlow<ChatHistoryItem?> = _currentChat.asStateFlow()
 
     private val _isLoadingChat = MutableStateFlow(false)
     val isLoadingChat: StateFlow<Boolean> = _isLoadingChat.asStateFlow()
@@ -160,8 +160,8 @@ class ChatViewModel @Inject constructor(
         _drawerVisible.value = false
     }
 
-    fun selectChat(chatHistory: ChatHistory) {
-        _navigateToChatId.value = chatHistory.id
+    fun selectChat(chatHistoryItem: ChatHistoryItem) {
+        _navigateToChatId.value = chatHistoryItem.id
     }
 
     fun resetNavigation() {

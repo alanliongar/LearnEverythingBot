@@ -102,7 +102,7 @@ fun ChatScreen(
         drawerState = drawerState,
         drawerContent = {
             ChatHistoryDrawer(
-                allChats = chatHistory.chatHistory,
+                allChats = chatHistory.chatHistoryItems,
                 onChatSelected = { chatHistory ->
                     chatViewModel.selectChat(chatHistory)
                 },

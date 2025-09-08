@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.learneverythingbot.data.ChatRepository
 import com.example.learneverythingbot.di.DispatcherIO
-import com.example.learneverythingbot.domain.model.HistoryItem
+import com.example.learneverythingbot.domain.model.ChatHistoryItem
 import com.example.learneverythingbot.domain.model.Topic
 import com.example.learneverythingbot.domain.model.TopicHistoryDrawerUiState
 import com.example.learneverythingbot.domain.model.TopicItem
@@ -41,7 +41,7 @@ class TopicViewModel @Inject constructor(
             _topicHistoryDrawerUiState.value = TopicHistoryDrawerUiState(isLoading = true)
             repository.getAllTopicHistory().collect { history ->
                 _topicHistoryDrawerUiState.value = TopicHistoryDrawerUiState(
-                    topicHistoryItems = history
+                    topicChatHistoryItems = history
                 )
             }
         }
@@ -69,8 +69,8 @@ class TopicViewModel @Inject constructor(
         }
     }
 
-    fun parseHistoryItem(historyItem: HistoryItem) {
-        _parsedTopics.value = parseTopics(historyItem.aiResponse)
+    fun parseHistoryItem(chatHistoryItem: ChatHistoryItem) {
+        _parsedTopics.value = parseTopics(chatHistoryItem.aiResponse)
     }
 
     private fun parseTopics(response: String): List<TopicItem> {
@@ -119,12 +119,12 @@ class TopicViewModel @Inject constructor(
     fun saveTopic(userMessage: String, aiResponse: String, timeStamp: Long) {
         viewModelScope.launch(context = dispatcher) {
             _topicScreenUiState.value = TopicScreenUiState(isLoading = true)
-            val historyItem = HistoryItem(
+            val chatHistoryItem = ChatHistoryItem(
                 userMessage = userMessage,
                 aiResponse = aiResponse,
                 timestamp = timeStamp
             )
-            repository.insertTopic(historyItem = historyItem)
+            repository.insertTopic(chatHistoryItem = chatHistoryItem)
             _topicScreenUiState.value = TopicScreenUiState(
                 chat = Topic(
                     subject = userMessage,

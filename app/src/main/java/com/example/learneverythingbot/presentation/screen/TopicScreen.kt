@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.learneverythingbot.components.ChatHistoryDrawer
-import com.example.learneverythingbot.domain.model.HistoryItem
+import com.example.learneverythingbot.domain.model.ChatHistoryItem
 import com.example.learneverythingbot.domain.model.TopicHistoryDrawerUiState
 import com.example.learneverythingbot.domain.model.TopicItem
 import com.example.learneverythingbot.domain.model.TopicScreenUiState
@@ -85,7 +85,7 @@ private fun TopicScreenContent(
     drawerState: DrawerState,
     topicHistory: TopicHistoryDrawerUiState,
     coroutineScope: CoroutineScope,
-    onDrawerItemSelected: (HistoryItem) -> Unit,
+    onDrawerItemSelected: (ChatHistoryItem) -> Unit,
     onHideDrawer: () -> Unit,
     onShowDrawer: () -> Unit,
     onDeleteTopic: (Int) -> Unit,
@@ -121,7 +121,7 @@ private fun TopicScreenContent(
         drawerState = drawerState,
         drawerContent = {
             ChatHistoryDrawer(
-                allChats = topicHistory.topicHistoryItems,
+                allChats = topicHistory.topicChatHistoryItems,
                 onChatSelected = { selected ->
                     onHideDrawer()
                     coroutineScope.launch { drawerState.close() }
@@ -236,8 +236,8 @@ fun TopicListPreview() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ChatScreenPreviewWithMessages() {
-    val fakeHistoryItem = listOf(
-        HistoryItem(
+    val fakeChatHistoryItem = listOf(
+        ChatHistoryItem(
             id = 1,
             userMessage = "Kotlin",
             aiResponse =
@@ -275,7 +275,7 @@ fun ChatScreenPreviewWithMessages() {
             topicScreenUiState = TopicScreenUiState(),
             parsedTopics = parsedTopics,
             drawerState = rememberDrawerState(DrawerValue.Closed),
-            topicHistory = TopicHistoryDrawerUiState(fakeHistoryItem),
+            topicHistory = TopicHistoryDrawerUiState(fakeChatHistoryItem),
             coroutineScope = rememberCoroutineScope(),
             onDrawerItemSelected = {},
             onHideDrawer = {},

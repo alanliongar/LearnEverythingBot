@@ -11,7 +11,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.learneverythingbot.presentation.screen.ChatHistoryDetailScreen
 import com.example.learneverythingbot.presentation.screen.IntroScreen
+import com.example.learneverythingbot.presentation.screen.QuizScreen
 import com.example.learneverythingbot.presentation.screen.SubTopicDetailScreen
+import com.example.learneverythingbot.presentation.screen.Topic
+import com.example.learneverythingbot.presentation.screen.TopicScreen
 import com.example.learneverythingbot.screen.ChatScreen
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -21,10 +24,10 @@ fun LearnEverythingNavigation(innerPadding: PaddingValues) {
     NavHost(navController = navController, startDestination = "introScreen") {
 
         composable(route = "introScreen") {
-            IntroScreen(innerPadding = innerPadding, navController = navController)
+            IntroScreen(navController = navController)
         }
 
-        composable(
+        /*composable(
             route = "chatScreen?subject={subject}",
             arguments = listOf(
                 navArgument("subject") {
@@ -35,7 +38,7 @@ fun LearnEverythingNavigation(innerPadding: PaddingValues) {
         ) { backStackEntry ->
             val subject = backStackEntry.arguments?.getString("subject").orEmpty()
             ChatScreen(initialSubject = subject, navController = navController)
-        }
+        }*/
 
         composable(
             route = "chatHistoryDetail?chatId={chatId}",
@@ -62,6 +65,20 @@ fun LearnEverythingNavigation(innerPadding: PaddingValues) {
                 subTopic = subTopic,
                 navController = navController
             )
+        }
+
+        composable(route = "topicScreen") {
+            TopicScreen(navController = navController)
+        }
+        composable(route = "quizScreen") {
+            val topic = Topic(
+                id = "1",
+                name = "",
+                description = "",
+                difficulty = "",
+                questionCount = 1
+            )
+            QuizScreen(topic = topic, navController = navController, onFinishQuiz = {})
         }
 
 
