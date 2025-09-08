@@ -76,3 +76,15 @@ Tudo atualizado no trello em cards separados e as responsabilidades definidas. R
 --Seguiremos anotando nesse documento os fatos importantes.
 */
 
+/*
+Dia 02/09/2025 a 07/09/2025
+1 - Redefinimos dois pares de tarefas e uma a mais:
+1.1 - André Morientes ficou com a implementacao da IA pra trazer um resumo breve do conteudo topicalizado, e sua tela ("back + front")
+1.2 - Oscar ficou responsavel pela implementacao da IA pra trazer o quiz pronto, e sua tela ("back + front") -- Ele só conseguiu a tela (front).
+1.3 - Plus: Alan ficou responsavel por transformar a cara de chat em botoes clicaveis.
+*/
+
+/*
+Dia 08/09/2025 - Data da entrega
+        1 - Alan ficou responsavel por integrar tudo e fazer os ajustes finos pra entrega final
+*/
