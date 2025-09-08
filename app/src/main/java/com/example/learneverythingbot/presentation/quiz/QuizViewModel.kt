@@ -3,8 +3,8 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.learneverythingbot.data.repository.QuizRepository
-import com.example.learneverythingbot.domain.model.Question
-import com.example.learneverythingbot.domain.model.Topic
+import com.example.learneverythingbot.presentation.screen.Question
+import com.example.learneverythingbot.presentation.screen.Topic
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

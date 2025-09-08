@@ -1,7 +1,7 @@
 ﻿package com.example.learneverythingbot.data.repository
 
-import com.example.learneverythingbot.domain.model.Question
-import com.example.learneverythingbot.domain.model.Topic
+import com.example.learneverythingbot.presentation.screen.Question
+import com.example.learneverythingbot.presentation.screen.Topic
 import kotlinx.coroutines.delay
 
 class QuizRepository {
@@ -41,6 +41,6 @@ class QuizRepository {
                 Question("2", "¿Quién pintó la Mona Lisa?",
                     listOf("Picasso", "Van Gogh", "Da Vinci", "Monet"), 2)
             )
-        }.take(topic.questionCount) // Limitar al número de preguntas del topic
+        }.take(topic.questionCount)
     }
 }

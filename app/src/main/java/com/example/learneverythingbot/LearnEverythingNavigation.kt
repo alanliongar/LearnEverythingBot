@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.learneverythingbot.presentation.screen.IntroScreen
 import com.example.learneverythingbot.presentation.screen.QuizScreen
+import com.example.learneverythingbot.presentation.screen.Topic
 import com.example.learneverythingbot.presentation.screen.TopicScreen
 
 @Composable
@@ -19,7 +20,26 @@ fun LearnEverythingNavigation() {
             TopicScreen(navController = navController)
         }
         composable(route = "quizScreen") {
-            QuizScreen(navController = navController)
+
+            /*data class Topic(
+                val id: String,
+                val name: String,
+                val description: String,
+                val difficulty: String,
+                val questionCount: Int
+            )*/
+            val topic = Topic(
+                id = "1",
+                name = "",
+                description = "",
+                difficulty = "",
+                questionCount = 1
+            )
+            QuizScreen(
+                topic = topic,
+                navController = navController,
+                onFinishQuiz = {}
+            )
         }
     }
 }

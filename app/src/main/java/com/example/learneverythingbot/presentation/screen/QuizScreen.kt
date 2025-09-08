@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,13 +25,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +45,9 @@ import androidx.compose.ui.unit.sp
 import com.example.learneverythingbot.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 
 import com.example.learneverythingbot.presentation.quiz.QuizViewModel
 import com.example.learneverythingbot.presentation.screen.components.ErrorComponent
@@ -59,7 +56,11 @@ import com.example.learneverythingbot.presentation.screen.components.LoadingComp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuizScreen(topic: Topic, onFinishQuiz: () -> Unit) {
+fun QuizScreen(
+    topic: Topic,
+    navController: NavController,
+    onFinishQuiz: () -> Unit
+) {
     val viewModel: QuizViewModel = viewModel()
     val questions by viewModel.questions.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -72,7 +73,7 @@ fun QuizScreen(topic: Topic, onFinishQuiz: () -> Unit) {
     // Cargar preguntas al iniciar la pantalla
     LaunchedEffect(topic) {
         if (questions.isEmpty()) {
-            viewModel.generateQuestions(topic)
+            viewModel.generateQuestions(topic = topic)
         }
     }
 
@@ -94,12 +95,14 @@ fun QuizScreen(topic: Topic, onFinishQuiz: () -> Unit) {
             isLoading -> {
                 LoadingComponent()
             }
+
             error != null -> {
                 ErrorComponent(
                     error = error!!,
                     onRetry = { viewModel.generateQuestions(topic) }
                 )
             }
+
             questions.isNotEmpty() -> {
                 // Header con progresso
                 QuizProgressHeader(
@@ -1046,8 +1049,19 @@ fun QuizScreenPreview() {
         modifier = Modifier.fillMaxSize(),
         color = colorResource(id = R.color.background_dark)
     ) {
+        val topic = Topic(
+            id = "1",
+            name = "",
+            description = "",
+            difficulty = "",
+            questionCount = 1
+        )
+        val navController: NavController
+        navController = NavController(context = LocalContext.current)
         QuizScreen(
-            onBackClick = {} // Função vazia para preview
+            topic = topic,
+            navController = navController,
+            onFinishQuiz = {}
         )
     }
 }
