@@ -1,38 +1,24 @@
 package com.example.learneverythingbot.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.learneverythingbot.domain.model.ChatHistory
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.learneverythingbot.domain.model.ChatHistoryItem
 
 @Composable
 fun ChatHistoryDrawer(
-    allChats: List<ChatHistory>,
-    onChatSelected: (ChatHistory) -> Unit,
-    onChatDeleted: (ChatHistory) -> Unit,
+    allChats: List<ChatHistoryItem>,
+    onChatSelected: (ChatHistoryItem) -> Unit,
+    onChatDeleted: (ChatHistoryItem) -> Unit,
     onClearAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -85,39 +71,10 @@ fun ChatHistoryDrawer(
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     items(allChats) { chat ->
-                        NavigationDrawerItem(
-                            label = {
-                                Column {
-                                    Text(
-                                        text = chat.userMessage,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = surfaceColor
-                                    )
-                                    Text(
-                                        text = chat.aiResponse,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = surfaceColor
-                                    )
-                                    Text(
-                                        text = formatDate(chat.timestamp),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = onSurfaceVariantColor,
-                                        modifier = Modifier.padding(top = 2.dp)
-                                    )
-                                }
-                            },
-                            selected = false,
-                            onClick = { onChatSelected(chat) },
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                            colors = NavigationDrawerItemDefaults.colors(
-                                unselectedContainerColor = Color.Transparent,
-                                unselectedTextColor = onSurfaceColor,
-                                unselectedIconColor = onSurfaceVariantColor
-                            )
+                        ChatHistoryDrawerItem(
+                            chat = chat,
+                            onChatSelected = { onChatSelected(chat) },
+                            onChatDeleted = { onChatDeleted(chat) }
                         )
                     }
                 }
@@ -157,8 +114,3 @@ fun ChatHistoryDrawer(
     }
 }
 
-fun formatDate(timestamp: Long): String {
-    val date = Date(timestamp)
-    val format = SimpleDateFormat("dd/MM/yy HH:mm", Locale.getDefault())
-    return format.format(date)
-}

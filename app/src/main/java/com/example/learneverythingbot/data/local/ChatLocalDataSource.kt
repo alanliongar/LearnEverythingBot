@@ -3,7 +3,7 @@
 import com.example.learneverythingbot.data.local.room.ChatHistoryDao
 import com.example.learneverythingbot.data.local.room.ChatHistoryEntity
 import com.example.learneverythingbot.di.DispatcherIO
-import com.example.learneverythingbot.domain.model.ChatHistory
+import com.example.learneverythingbot.domain.model.ChatHistoryItem
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -11,34 +11,14 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ChatLocalDataSource @Inject constructor(
-    private val chatHistoryDao: ChatHistoryDao,
-    @DispatcherIO val dispatcher: CoroutineDispatcher
+    private val chatHistoryDao: ChatHistoryDao, @DispatcherIO val dispatcher: CoroutineDispatcher
 ) : LocalDataSource {
 
-    override fun getAllChatHistory(): Flow<List<ChatHistory>> =
+    override suspend fun getAllChatHistory(): Flow<List<ChatHistoryItem>> =
         chatHistoryDao.getAllChatHistory() // Flow<List<Entity>>
             .map { entities ->
                 entities.map { it.toDomain() } // mapeamento pesado fica no IO
-            }
-            .flowOn(context = dispatcher) // 👈 aplica aqui UMA vez
-
-    private fun ChatHistoryEntity.toDomain() = ChatHistory(
-        id = id,
-        userMessage = userMessage,
-        aiResponse = aiResponse,
-        timestamp = timestamp
-    )
-
-    override suspend fun insertChatHistory(chatHistory: ChatHistory) {
-        chatHistoryDao.insertChatHistory(
-            ChatHistoryEntity(
-                id = chatHistory.id,
-                userMessage = chatHistory.userMessage,
-                aiResponse = chatHistory.aiResponse,
-                timestamp = chatHistory.timestamp
-            )
-        )
-    }
+            }.flowOn(context = dispatcher) // 👈 aplica aqui UMA vez
 
     override suspend fun deleteAllChat() {
         chatHistoryDao.deleteAllChat()
@@ -46,5 +26,42 @@ class ChatLocalDataSource @Inject constructor(
 
     override suspend fun deleteChat(id: Int) {
         chatHistoryDao.deleteChat(id = id)
+    }
+
+    private fun ChatHistoryEntity.toDomain() = ChatHistoryItem(
+        id = id, userMessage = userMessage, aiResponse = aiResponse, timestamp = timestamp
+    )
+
+    override suspend fun insertChatHistory(chatHistoryItem: ChatHistoryItem) {
+        val chatHistoryEntityItem = ChatHistoryEntity(
+            id = chatHistoryItem.id,
+            userMessage = chatHistoryItem.userMessage,
+            aiResponse = chatHistoryItem.aiResponse,
+            timestamp = chatHistoryItem.timestamp
+        )
+        chatHistoryDao.insertChatHistory(chatHistoryEntityItem)
+    }
+
+    override suspend fun insertTopicHistory(chatHistoryItem: ChatHistoryItem) {
+        chatHistoryDao.insertChatHistory(
+            ChatHistoryEntity(
+                id = chatHistoryItem.id,
+                userMessage = chatHistoryItem.userMessage,
+                aiResponse = chatHistoryItem.aiResponse,
+                timestamp = chatHistoryItem.timestamp
+            )
+        )
+    }
+
+    override suspend fun deleteAllTopic() {
+        chatHistoryDao.deleteAllChat()
+    }
+
+    override suspend fun deleteTopic(id: Int) {
+        chatHistoryDao.deleteChat(id = id)
+    }
+
+    override suspend fun getChatById(id: Int): ChatHistoryItem? {
+        return chatHistoryDao.getChatById(id)?.toDomain()
     }
 }
