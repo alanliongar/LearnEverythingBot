@@ -47,4 +47,8 @@ class ChatLocalDataSource @Inject constructor(
     override suspend fun deleteTopic(id: Int) {
         chatHistoryDao.deleteChat(id = id)
     }
+
+    override suspend fun getChatById(id: Int): ChatHistory? {
+        return chatHistoryDao.getChatById(id)?.toDomain()
+    }
 }

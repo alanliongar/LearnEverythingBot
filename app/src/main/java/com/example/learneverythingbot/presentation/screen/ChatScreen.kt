@@ -1,5 +1,7 @@
 package com.example.learneverythingbot.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,86 +14,87 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.learneverythingbot.components.ChatHistoryDrawer
-import com.example.learneverythingbot.domain.model.Chat
-import com.example.learneverythingbot.domain.model.HistoryItem
-import com.example.learneverythingbot.domain.model.ChatHistoryDrawerUiState
 import com.example.learneverythingbot.presentation.screen.components.MessageInputBar
 import com.example.learneverythingbot.domain.model.ChatMessage
-import com.example.learneverythingbot.domain.model.ChatScreenUiState
 import com.example.learneverythingbot.domain.model.Role
 import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
 import com.example.learneverythingbot.presentation.ChatViewModel
-import kotlinx.coroutines.CoroutineScope
+import com.example.learneverythingbot.presentation.screen.components.AssistantText
+import com.example.learneverythingbot.presentation.screen.components.SubTopicButton
+import com.example.learneverythingbot.presentation.screen.components.UserBubble
+import com.example.learneverythingbot.utils.SubTopicParser
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    subject: String,
+    initialSubject: String,
+    navController: NavHostController,
     chatViewModel: ChatViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+
+    // ADICIONE ESTA LINHA
+    var currentSubject by remember { mutableStateOf(initialSubject) }
+
     val chatHistory by chatViewModel.chatHistoryDrawerUiState.collectAsState()
     val chatScreenUiState by chatViewModel.chatScreenUiState.collectAsState()
     val drawerVisible by chatViewModel.drawerVisible.collectAsState()
+    val navigateToChatId by chatViewModel.navigateToChatId.collectAsState()
+
     val drawerState =
         rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
-    ChatScreenContent(
-        chatScreenUiState = chatScreenUiState,
-        drawerState = drawerState,
-        chatHistory = chatHistory,
-        coroutineScope = coroutineScope,
-        onHideDrawer = { chatViewModel.hideDrawer() },
-        onShowDrawer = { chatViewModel.showDrawer() },
-        onDeleteChat = { chatViewModel.deleteChat(it) },
-        onDeleteAllChat = { chatViewModel.deleteAllChat() },
-        onGetGptResponse = { chatViewModel.getGptResponse(it) },
-        subject = subject
-    )
-}
+    var messages by remember { mutableStateOf<List<ChatMessage>>(emptyList()) }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ChatScreenContent(
-    chatScreenUiState: ChatScreenUiState,
-    drawerState: DrawerState,
-    chatHistory: ChatHistoryDrawerUiState,
-    coroutineScope: CoroutineScope,
-    onHideDrawer: () -> Unit,
-    onShowDrawer: () -> Unit,
-    onDeleteChat: (Int) -> Unit,
-    onDeleteAllChat: () -> Unit,
-    onGetGptResponse: (String) -> Unit,
-    subject: String,
-) {
-    val historyMessages = remember(chatHistory.historyItems) {
-        chatHistory.historyItems
-            .sortedBy { it.timestamp }
-            .flatMap { item ->
-                buildList {
-                    if (item.userMessage.isNotBlank()) add(ChatMessage(Role.User, item.userMessage))
-                    if (item.aiResponse.isNotBlank()) add(
-                        ChatMessage(
-                            Role.Assistant,
-                            item.aiResponse
-                        )
-                    )
-                }
-            }
-    }
-    val isGenericSubject = subject.isBlank() || subject.equals("Geral", ignoreCase = true)
-    var isTyping by remember { mutableStateOf(false) }
+    val shouldNavigate by remember { mutableStateOf(false) }
 
     LaunchedEffect(chatScreenUiState.chat.aiAnswer) {
-        if (chatScreenUiState.chat.aiAnswer.isNotBlank()) {
-            isTyping = false
+        val answer = chatScreenUiState.chat.aiAnswer
+        if (answer.isNotBlank()) {
+            val subTopics = SubTopicParser.parseResponse(answer, currentSubject) // MUDEI AQUI
+
+            val newMessage = if (messages.isNotEmpty() && messages.last().role == Role.Assistant) {
+                messages.dropLast(1) + ChatMessage(
+                    Role.Assistant,
+                    answer,
+                    subTopics
+                )
+            } else {
+                messages + ChatMessage(Role.Assistant, answer, subTopics)
+            }
+
+            messages = newMessage
+        }
+    }
+
+    LaunchedEffect(navigateToChatId) {
+        navigateToChatId?.let { chatId ->
+            if (chatId > 0) {
+                println("Navegando para chat ID: $chatId")
+                navController.navigate("chatHistoryDetail?chatId=$chatId")
+                chatViewModel.resetNavigation()
+                chatViewModel.hideDrawer()
+                coroutineScope.launch {
+                    drawerState.close()
+                }
+            }
+        }
+    }
+
+    if (!chatScreenUiState.error.isNullOrEmpty()) {
+        LaunchedEffect(chatScreenUiState.error) {
+            println("Erro: ${chatScreenUiState.error}")
         }
     }
 
@@ -99,13 +102,16 @@ private fun ChatScreenContent(
         drawerState = drawerState,
         drawerContent = {
             ChatHistoryDrawer(
-                allChats = chatHistory.historyItems,
-                onChatSelected = {
-                    onHideDrawer()
-                    coroutineScope.launch { drawerState.close() }
+                allChats = chatHistory.chatHistory,
+                onChatSelected = { chatHistory ->
+                    chatViewModel.selectChat(chatHistory)
                 },
-                onChatDeleted = { onDeleteChat(it.id) },
-                onClearAll = { onDeleteAllChat() }
+                onChatDeleted = { chatHistory ->
+                    chatViewModel.deleteChat(chatHistory.id)
+                },
+                onClearAll = {
+                    chatViewModel.deleteAllChat()
+                }
             )
         }
     ) {
@@ -113,25 +119,42 @@ private fun ChatScreenContent(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(if (isGenericSubject) "Learn Everything Bot" else "Assunto: ${subject.trim()}")
+                        Text(
+                            text = if (currentSubject.isNotEmpty()) // MUDEI AQUI
+                                "Assunto: $currentSubject" // MUDEI AQUI
+                            else
+                                "Learn Everything Bot"
+                        )
                     },
                     navigationIcon = {
-                        IconButton(onClick = {
-                            onShowDrawer()
-                            coroutineScope.launch { drawerState.open() }
-                        }) {
+                        IconButton(
+                            onClick = {
+                                chatViewModel.showDrawer()
+                                coroutineScope.launch {
+                                    drawerState.open()
+                                }
+                            }
+                        ) {
                             Icon(Icons.Default.Menu, contentDescription = "Abrir Menu")
                         }
                     }
                 )
             },
             bottomBar = {
-                MessageInputBar(
-                    onMessageSend = { userText ->
-                        isTyping = true
-                        onGetGptResponse(userText)
-                    }
-                )
+                if (currentSubject.isNotEmpty()) { // MUDEI AQUI
+                    MessageInputBar(
+                        onMessageSend = { userText ->
+                            // ADICIONE ESTAS LINHAS
+                            if (messages.isEmpty() && currentSubject.isEmpty()) {
+                                currentSubject = userText.take(30)
+                            }
+
+                            messages += ChatMessage(Role.User, userText)
+                            messages += ChatMessage(Role.Assistant, "Digitando...")
+                            chatViewModel.getGptResponse(userText)
+                        }
+                    )
+                }
             }
         ) { inner ->
             Box(
@@ -139,11 +162,7 @@ private fun ChatScreenContent(
                     .fillMaxSize()
                     .padding(inner)
             ) {
-                val uiMessages = if (isTyping)
-                    historyMessages + ChatMessage(Role.Assistant, "Digitando...")
-                else historyMessages
-
-                if (uiMessages.isEmpty()) {
+                if (messages.isEmpty()) {
                     Text(
                         text = stringResource(id = com.example.learneverythingbot.R.string.initial_prompt),
                         modifier = Modifier
@@ -159,129 +178,37 @@ private fun ChatScreenContent(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(top = 12.dp, bottom = 100.dp)
                     ) {
-                        items(uiMessages) { msg ->
+                        items(messages) { msg ->
                             when (msg.role) {
                                 Role.User -> UserBubble(msg.text)
-                                Role.Assistant -> AssistantText(msg.text)
+                                Role.Assistant -> {
+                                    Column {
+                                        if (msg.subTopics.isNotEmpty()) {
+                                            Spacer(modifier = Modifier.height(12.dp))
+                                            msg.subTopics.forEach { subTopic ->
+                                                SubTopicButton(
+                                                    subTopic = subTopic,
+                                                    onClick = {
+                                                        navController.navigate("subTopicDetail/${currentSubject}/${subTopic.title}") // MUDEI AQUI
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
+                    }
+
+                    if (chatScreenUiState.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(48.dp)
+                        )
                     }
                 }
             }
         }
     }
 }
-
-
-@Composable
-fun UserBubble(text: String) {
-    Row(Modifier.fillMaxWidth()) {
-        Spacer(Modifier.weight(1f))
-        Box(
-            Modifier
-                .widthIn(max = 320.dp)
-                .background(Purple40, RoundedCornerShape(16.dp))
-                .padding(horizontal = 12.dp, vertical = 10.dp)
-        ) {
-            Text(text, color = Color.White, lineHeight = 20.sp)
-        }
-    }
-}
-
-@Composable
-fun AssistantText(text: String) {
-    Row(Modifier.fillMaxWidth()) {
-        Box(
-            Modifier
-                .weight(1f)
-                .padding(end = 48.dp)
-        ) {
-            Text(text, color = MaterialTheme.colorScheme.onBackground, lineHeight = 20.sp)
-        }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ChatScreenPreviewEmpty() {
-    val chatScreenUiState = ChatScreenUiState(
-        chat = Chat(
-            subject = "",
-            aiAnswer = "", // vazio = sem mensagens
-            timeStamp = System.currentTimeMillis()
-        )
-    )
-
-    MaterialTheme {
-        ChatScreenContent(
-            chatScreenUiState = chatScreenUiState,
-            drawerState = rememberDrawerState(DrawerValue.Closed),
-            chatHistory = ChatHistoryDrawerUiState(historyItems = emptyList()),
-            coroutineScope = rememberCoroutineScope(),
-            onHideDrawer = {},
-            onShowDrawer = {},
-            onDeleteChat = {},
-            onDeleteAllChat = {},
-            onGetGptResponse = {},
-            subject = ""
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ChatScreenPreviewWithMessages() {
-    val fakeHistoryItem = listOf(
-        HistoryItem(
-            id = 1,
-            userMessage = "Kotlin",
-            aiResponse = "Esta é uma resposta simulada do Assistente.",
-            timestamp = System.currentTimeMillis()
-        )
-    )
-
-    MaterialTheme {
-        ChatScreenContent(
-            chatScreenUiState = ChatScreenUiState(),
-            drawerState = rememberDrawerState(DrawerValue.Closed),
-            chatHistory = ChatHistoryDrawerUiState(historyItems = fakeHistoryItem),
-            coroutineScope = rememberCoroutineScope(),
-            onHideDrawer = {},
-            onShowDrawer = {},
-            onDeleteChat = {},
-            onDeleteAllChat = {},
-            onGetGptResponse = {},
-            subject = "Kotlin"
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ChatScreenDrawerPreview() {
-    val fakeHistoryItem = listOf(
-        HistoryItem(
-            id = 1,
-            userMessage = "Kotlin",
-            aiResponse = "Esta é uma resposta simulada do Assistente.",
-            timestamp = System.currentTimeMillis()
-        )
-    )
-
-    MaterialTheme {
-        ChatScreenContent(
-            chatScreenUiState = ChatScreenUiState(),
-            drawerState = rememberDrawerState(DrawerValue.Open),
-            chatHistory = ChatHistoryDrawerUiState(historyItems = fakeHistoryItem),
-            coroutineScope = rememberCoroutineScope(),
-            onHideDrawer = {},
-            onShowDrawer = {},
-            onDeleteChat = {},
-            onDeleteAllChat = {},
-            onGetGptResponse = {},
-            subject = "Kotlin"
-        )
-    }
-}
-
-

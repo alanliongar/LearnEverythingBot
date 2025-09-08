@@ -35,9 +35,7 @@ private fun handleSendMessage(
 @Composable
 fun MessageInputBar(
     onMessageSend: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    placeholder: String = stringResource(id = R.string.hint_message)
+    modifier: Modifier= Modifier,
 ) {
     var message by remember { mutableStateOf("") }
 
@@ -54,12 +52,15 @@ fun MessageInputBar(
             OutlinedTextField(
                 value = message,
                 onValueChange = { message = it },
-                enabled = enabled,
+                enabled = true,
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = 52.dp),
-                placeholder = { Text(placeholder) },
-                shape = RoundedCornerShape(14.dp),
+                placeholder = { Text(
+                    text = stringResource(id = R.string.hint_message),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ) },
+                shape = RoundedCornerShape(15.dp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(
                     onSend = {
@@ -80,7 +81,7 @@ fun MessageInputBar(
                         onMessageCleared = { message = "" }
                     )
                 },
-                enabled = enabled,
+                enabled = true,
                 colors = IconButtonDefaults.filledIconButtonColors(containerColor = Purple40),
                 modifier = Modifier.size(52.dp),
                 shape = RoundedCornerShape(14.dp)

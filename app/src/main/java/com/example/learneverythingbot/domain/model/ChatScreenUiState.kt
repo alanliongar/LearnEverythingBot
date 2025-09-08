@@ -1,14 +1,17 @@
 ﻿package com.example.learneverythingbot.domain.model
 
 data class ChatScreenUiState(
-    val chat: Chat = Chat("","", System.currentTimeMillis()),
+    val chat: Chat = Chat("", ""),
     val isLoading: Boolean = false,
-    val isError: Boolean = false,
+    val error: String? = null,
     val errorMessage: String? = "Algo deu errado!"
 )
+
+
 
 data class Chat(
     val subject: String,
     val aiAnswer: String,
-    val timeStamp: Long
+    val timeStamp: Long = System.currentTimeMillis()
 )
+
