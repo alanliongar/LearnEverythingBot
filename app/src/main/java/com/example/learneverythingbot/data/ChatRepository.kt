@@ -2,7 +2,7 @@
 
 import com.example.learneverythingbot.data.local.LocalDataSource
 import com.example.learneverythingbot.data.remote.RemoteDataSource
-import com.example.learneverythingbot.domain.model.ChatHistory
+import com.example.learneverythingbot.domain.model.ChatHistoryItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -11,46 +11,69 @@ class ChatRepository @Inject constructor(
     private val local: LocalDataSource,
     private val remote: RemoteDataSource
 ) {
-    suspend fun getGptResponse(topic: String): Result<ChatHistory> {
-        var endResult: Result<ChatHistory>
-        try {
+    suspend fun getGptResponse(topic: String): Result<ChatHistoryItem> {
+        return try {
             val result = remote.learnChatTopicGptResponse(topic = topic)
             if (result.isSuccess) {
                 val remoteGptResponse = result.getOrNull() ?: ""
                 if (remoteGptResponse.isNotEmpty()) {
-                    val lastResponse = ChatHistory(
-                        id = 0,
+                    val chatHistoryItem = ChatHistoryItem(
+                        id = 0, // ID 0 para novo chat (Room irá auto-generate)
                         userMessage = topic,
                         aiResponse = remoteGptResponse
                     )
-                    endResult = Result.success(lastResponse)
+                    Result.success(chatHistoryItem)
                 } else {
-                    endResult = Result.failure<ChatHistory>(Exception("Algo deu errado!"))
+                    Result.failure(Exception("Resposta vazia da API"))
                 }
             } else {
-                endResult = Result.failure<ChatHistory>(Exception("Algo deu errado!"))
+                Result.failure(Exception("Falha na chamada da API"))
             }
         } catch (ex: Exception) {
-            endResult = Result.failure<ChatHistory>(Exception(ex.message ?: "Algo deu errado!"))
+            Result.failure(Exception(ex.message ?: "Erro desconhecido"))
         }
-        return endResult
     }
 
-    suspend fun insertChat(chatHistory: ChatHistory) {
-        local.insertChatHistory(chatHistory = chatHistory)
+    suspend fun getAllTopicHistory(): Flow<List<ChatHistoryItem>> {
+        val placeholder = ChatHistoryItem(0, "", "", System.currentTimeMillis())
+        return local.getAllChatHistory() //já vem do IO
+            .map { list -> if (list.isEmpty()) listOf(placeholder) else list }
     }
 
-    suspend fun deleteChat(id: Int){
+    suspend fun deleteAllTopic(){
+        local.deleteAllTopic()
+    }
+
+    suspend fun insertTopic(chatHistoryItem: ChatHistoryItem) {
+        local.insertTopicHistory(chatHistoryItem = chatHistoryItem)
+    }
+
+
+    suspend fun getSubTopicSummary(topic: String, subTopic: String): Result<String> {
+        return try {
+            remote.getSubTopicSummary(topic, subTopic)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "Erro ao buscar resumo do subtopico"))
+        }
+    }
+
+    suspend fun insertChat(chatHistoryItem: ChatHistoryItem) {
+        local.insertChatHistory(chatHistoryItem = chatHistoryItem)
+    }
+
+    suspend fun deleteChat(id: Int) {
         local.deleteChat(id = id)
     }
 
-    suspend fun deleteAllChat(){
+    suspend fun deleteAllChat() {
         local.deleteAllChat()
     }
 
-    fun getAllChatHistory(): Flow<List<ChatHistory>> {
-        val placeholder = ChatHistory(0, "", "", System.currentTimeMillis())
-        return local.getAllChatHistory() //já vem do IO
-            .map { list -> if (list.isEmpty()) listOf(placeholder) else list }
+    suspend fun getAllChatHistory(): Flow<List<ChatHistoryItem>> {
+        return local.getAllChatHistory()
+    }
+
+    suspend fun getChatById(id: Int): ChatHistoryItem? {
+        return local.getChatById(id)
     }
 }

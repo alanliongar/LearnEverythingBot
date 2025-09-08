@@ -25,8 +25,8 @@ import com.example.learneverythingbot.presentation.screen.components.GetStartedB
 import com.example.learneverythingbot.utils.components.QuizButton
 
 @Composable
-fun IntroScreen(innerPadding: PaddingValues, navController: NavHostController) {
-    Box(modifier = Modifier.padding(innerPadding)) {
+fun IntroScreen(navController: NavHostController) {
+    Box(modifier = Modifier.padding()) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -103,7 +103,7 @@ fun WelcomeText(navController: NavController) {
 
         GetStartedButton(
             onClickNavigate = {
-                navController.navigate(route = "chatScreen")
+                navController.navigate(route = "topicScreen")
             }
         )
         QuizButton(
