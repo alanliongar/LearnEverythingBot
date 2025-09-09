@@ -18,7 +18,7 @@ Learn Everything Bot is an Android application built for focused, rapid learning
   </tr>
   <tr>
     <td align="center">
-      <img src="https://github.com/alanliongar/LearnEverythingBot/blob/main/screenshots/darkmode.png" width="500" />
+      <img src="https://github.com/alanliongar/LearnEverythingBot/blob/main/screenshots/Darkmode.png" width="500" />
     </td>
     <td align="center">
       <img src="https://github.com/alanliongar/LearnEverythingBot/blob/main/screenshots/lightmode.png" width="500" />
