@@ -74,7 +74,6 @@ fun TopicScreen(
         if (parsedTopics.isNotEmpty()) {
             val s = (topicScreenUiState.chat.subject)
             val t = (item.title)
-            println("Alannnn valordes:$s valordeT:$t")
             navController.navigate("subTopicDetail/$s/$t")
             lastClickedItem.value = null
         }

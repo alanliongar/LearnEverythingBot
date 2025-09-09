@@ -13,5 +13,6 @@ Anotacoes rapidas:
 Pontos a melhorar:
         7 - Incluir testes unitários
         8 - refatorar e proteger funções (transformar em private), principalmente as composable
+        9 - testar os estados de erro e loading
 
         */
