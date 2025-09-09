@@ -47,7 +47,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.learneverythingbot.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,6 +56,9 @@ import androidx.navigation.NavController
 import com.example.learneverythingbot.presentation.QuizViewModel
 import com.example.learneverythingbot.presentation.screen.components.ErrorComponent
 import com.example.learneverythingbot.presentation.screen.components.LoadingComponent
+import com.example.learneverythingbot.presentation.screen.ui.theme.Error
+import com.example.learneverythingbot.presentation.screen.ui.theme.Success
+import com.example.learneverythingbot.presentation.screen.ui.theme.Warning
 import kotlinx.coroutines.launch
 
 
@@ -85,7 +87,6 @@ fun QuizScreen(
     }
 
     QuizScreenContent(
-        topic = topic,
         questions = questions,
         isLoading = isLoading,
         error = error,
@@ -108,8 +109,7 @@ fun QuizScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuizScreenContent(
-    topic: String,
+private fun QuizScreenContent(
     questions: List<Question>,
     isLoading: Boolean,
     error: Boolean?,
@@ -283,7 +283,7 @@ fun TopicSelectionScreen(onTopicSelected: (Topic) -> Unit) {
 }
 
 @Composable
-fun TopicCard(topic: Topic, onClick: () -> Unit) {
+private fun TopicCard(topic: Topic, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -345,9 +345,9 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
                             .clip(RoundedCornerShape(8.dp))
                             .background(
                                 color = when (topic.difficulty) {
-                                    "Fácil" -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
-                                    "Médio" -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
-                                    else -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+                                    "Fácil" -> Success.copy(alpha = 0.2f)
+                                    "Médio" -> Warning.copy(alpha = 0.2f)
+                                    else -> Error.copy(alpha = 0.2f)
                                 }
                             )
                             .padding(horizontal = 12.dp, vertical = 6.dp)
@@ -355,18 +355,15 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
                         Text(
                             text = topic.difficulty,
                             color = when (topic.difficulty) {
-                                "Fácil" -> MaterialTheme.colorScheme.tertiary
-                                "Médio" -> MaterialTheme.colorScheme.surfaceVariant
-                                else -> MaterialTheme.colorScheme.error
+                                "Fácil" -> Success
+                                "Médio" -> Warning
+                                else -> Error
                             },
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
-
                     Spacer(modifier = Modifier.width(12.dp))
-
-                    // Contagem de perguntas
                     Text(
                         text = "${topic.questionCount} perguntas",
                         color = MaterialTheme.colorScheme.secondary,
@@ -399,9 +396,9 @@ fun QuizProgressHeader(currentQuestion: Int, totalQuestions: Int, difficulty: St
                     .clip(RoundedCornerShape(8.dp))
                     .background(
                         color = when (difficulty) {
-                            "Fácil" -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
-                            "Médio" -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
-                            else -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+                            "Fácil" -> Success.copy(alpha = 0.2f)
+                            "Médio" -> Warning.copy(alpha = 0.2f)
+                            else -> Error.copy(alpha = 0.2f)
                         }
                     )
                     .padding(horizontal = 12.dp, vertical = 6.dp)
@@ -409,9 +406,9 @@ fun QuizProgressHeader(currentQuestion: Int, totalQuestions: Int, difficulty: St
                 Text(
                     text = difficulty,
                     color = when (difficulty) {
-                        "Fácil" -> MaterialTheme.colorScheme.tertiary
-                        "Médio" -> MaterialTheme.colorScheme.surfaceVariant
-                        else -> MaterialTheme.colorScheme.error
+                        "Fácil" -> Success
+                        "Médio" -> Warning
+                        else -> Error
                     },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium

@@ -35,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -145,11 +146,11 @@ private fun TopicScreenContent(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        scrimColor = MaterialTheme.colorScheme.scrim,
+        scrimColor = MaterialTheme.colorScheme.outline,
         drawerContent = {
             ModalDrawerSheet(
-                drawerContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                drawerContentColor = MaterialTheme.colorScheme.onSurface,
+                drawerContainerColor = MaterialTheme.colorScheme.surface,
+                drawerContentColor = Color(0xFFEF4444),
                 drawerTonalElevation = 0.dp
             ) {
                 ChatHistoryDrawer(

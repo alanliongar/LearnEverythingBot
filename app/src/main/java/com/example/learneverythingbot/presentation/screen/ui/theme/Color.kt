@@ -2,7 +2,6 @@ package com.example.learneverythingbot.presentation.screen.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-object BrandColors {
     // Primárias/secundárias (exemplos — mantenha as que você já tem)
     val Primary = Color(0xFF10B981)
     val PrimaryDark = Color(0xFF0CA678)
@@ -28,12 +27,12 @@ object BrandColors {
 
     // Estados
     val Error = Color(0xFFEF4444)
-    val Success = Color(0xFF10B981) // ← vai virar tertiary
-    val Warning = Color(0xFFF59E0B) // ← vai virar surfaceVariant
+    val Success = Color(0xFF10B981)
+    val Warning = Color(0xFFF59E0B)
 
     // Bubbles (se ainda usar)
     val ChatUserBubble = Color(0xFF10B981)
     val ChatUserText = Color(0xFFFFFFFF)
     val ChatMentorBubble = Color(0xFFF3F4F6)
     val ChatMentorText = Color(0xFF111827)
-}
+

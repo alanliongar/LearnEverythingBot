@@ -7,66 +7,55 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val P get() = BrandColors
-
 private val LightColors = lightColorScheme(
-    primary = P.Primary,
-    onPrimary = P.TextOnPrimary,
-    primaryContainer = P.PrimaryLight,
-    onPrimaryContainer = P.TextPrimary,
+    primary = Primary,
+    onPrimary = TextOnPrimary,
+    primaryContainer = PrimaryLight,
+    onPrimaryContainer = TextPrimary,
 
-    secondary = P.Secondary,
-    onSecondary = P.TextOnSecondary,
-    secondaryContainer = P.SecondaryLight,
-    onSecondaryContainer = P.TextOnPrimary,
+    secondary = Secondary,
+    onSecondary = TextOnSecondary,
+    secondaryContainer = SecondaryLight,
+    onSecondaryContainer = TextOnPrimary,
 
-    tertiary = P.Success,
-    onTertiary = P.TextOnPrimary,
+    tertiary = Success,
+    onTertiary = TextOnPrimary,
 
+    background = BackgroundLight,
+    onBackground = TextPrimary,
 
-    background = P.BackgroundLight,
-    onBackground = P.TextPrimary,
+    surface = SurfaceLight,
+    surfaceVariant = Warning,
+    onSurface = TextPrimary,
+    onSurfaceVariant = TextSecondary,
 
-    surface = P.SurfaceLight,
-    surfaceVariant = P.Warning,
-    onSurface = P.TextPrimary,
-    onSurfaceVariant = P.TextSecondary,
-
-    error = P.Error,
+    error = Error,
     onError = Color.White,
 
-    outline = P.BorderLight
+    outline = BorderLight
 )
 
 private val DarkColors = darkColorScheme(
-    primary = P.Primary,
-    onPrimary = P.TextOnPrimary,
-    primaryContainer = P.PrimaryDark,
-    onPrimaryContainer = P.TextOnPrimary,
+    primary = Primary,
+    onPrimary = TextOnPrimary,
+    primaryContainer = PrimaryDark,
+    onPrimaryContainer = TextOnPrimary,
 
-    secondary = P.Secondary,
-    onSecondary = P.TextOnSecondary,
-    secondaryContainer = P.SecondaryDark,
-    onSecondaryContainer = P.TextOnPrimary,
+    secondary = Secondary,
+    onSecondary = TextOnSecondary,
+    secondaryContainer = SecondaryDark,
+    onSecondaryContainer = TextOnPrimary,
 
-
-    /*tertiary = P.Success,
-    onTertiary = P.TextOnPrimary,*/
-
-    /*surfaceVariant = P.Warning,
-    onSurfaceVariant = P.TextSecondary,*/
-
-
-    background = P.BackgroundDark,
+    background = BackgroundDark,
     onBackground = Color.White,
 
-    surface = P.SurfaceDark,
+    surface = SurfaceDark,
     onSurface = Color.White,
 
-    error = P.Error,
+    error = Error,
     onError = Color.White,
 
-    outline = P.BorderDark
+    outline = BorderDark
 )
 
 @Composable
@@ -82,10 +71,10 @@ fun LearnEverythingBotTheme(
             val dyn = if (darkTheme) dynamicDarkColorScheme(ctx) else dynamicLightColorScheme(ctx)
             if (keepBrandOnDynamic) {
                 dyn.copy(
-                    primary = P.Primary,
-                    onPrimary = P.TextOnPrimary,
-                    secondary = P.Secondary,
-                    onSecondary = P.TextOnSecondary
+                    primary = Primary,
+                    onPrimary = TextOnPrimary,
+                    secondary = Secondary,
+                    onSecondary = TextOnSecondary
                 )
             } else dyn
         } else {
