@@ -50,7 +50,7 @@ Learn Everything Bot is an Android application built for focused, rapid learning
 ```
 The MIT License (MIT)
 
-Copyright (c) 2025 Alan Gomes, Bruna Fenali, Mariana Lopes, Philipe Bittencourt
+Copyright (c) 2025 Alan Gomes, Oscar Zambrano, André Morientes
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
