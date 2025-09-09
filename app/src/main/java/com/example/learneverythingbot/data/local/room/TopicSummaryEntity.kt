@@ -16,7 +16,9 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("chat_history_user_message")]
+    indices = [
+        Index(value = ["chat_history_user_message", "subtopic_title"], unique = true)
+    ]
 )
 data class TopicSummaryEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

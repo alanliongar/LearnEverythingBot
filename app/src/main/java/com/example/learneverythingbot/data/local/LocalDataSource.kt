@@ -1,6 +1,8 @@
 ﻿package com.example.learneverythingbot.data.local
 
+import com.example.learneverythingbot.data.local.room.QuizEntity
 import com.example.learneverythingbot.domain.model.ChatHistoryItem
+import com.example.learneverythingbot.domain.model.QuizQuestion
 import kotlinx.coroutines.flow.Flow
 
 interface LocalDataSource {
@@ -23,4 +25,12 @@ interface LocalDataSource {
     suspend fun getSummaryByTopicAndSubTopic(topic: String, subTopic: String): String?
 
     suspend fun insertSummary(topic: String, subTopic: String, secondAiResponse: String)
+
+    suspend fun insertQuizQuestions(topic: String, subTopic: String, questions: List<QuizQuestion>)
+
+    suspend fun getQuizQuestionsByTopic(topic: String): List<QuizQuestion>?
+
+    suspend fun getQuizQuestionsByTopicAndSubTopic(topic: String, subTopic: String): List<QuizQuestion>?
+
+    suspend fun countByTopic(topic: String): Int
 }

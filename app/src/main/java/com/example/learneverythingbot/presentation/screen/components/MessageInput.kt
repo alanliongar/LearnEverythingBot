@@ -12,13 +12,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.learneverythingbot.R
-import com.example.learneverythingbot.presentation.screen.ui.theme.Purple40
 
 private fun handleSendMessage(
     message: String,
@@ -31,11 +29,10 @@ private fun handleSendMessage(
         onMessageCleared(trimmed)
     }
 }
-
 @Composable
 fun MessageInputBar(
     onMessageSend: (String) -> Unit,
-    modifier: Modifier= Modifier,
+    modifier: Modifier = Modifier,
 ) {
     var message by remember { mutableStateOf("") }
 
@@ -56,10 +53,12 @@ fun MessageInputBar(
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = 52.dp),
-                placeholder = { Text(
-                    text = stringResource(id = R.string.hint_message),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                ) },
+                placeholder = {
+                    Text(
+                        text = stringResource(id = R.string.hint_message),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
                 shape = RoundedCornerShape(15.dp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(
@@ -82,19 +81,22 @@ fun MessageInputBar(
                     )
                 },
                 enabled = true,
-                colors = IconButtonDefaults.filledIconButtonColors(containerColor = Purple40),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 modifier = Modifier.size(52.dp),
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = null,
-                    tint = Color.White
+                    contentDescription = null
                 )
             }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable

@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,6 +36,7 @@ fun ChatHistoryDrawerItem(
     onChatDeleted: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val cs = MaterialTheme.colorScheme
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showDeleteDialog) {
@@ -50,16 +50,10 @@ fun ChatHistoryDrawerItem(
                         onChatDeleted()
                         showDeleteDialog = false
                     }
-                ) {
-                    Text("Excluir")
-                }
+                ) { Text("Excluir", color = cs.error) }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showDeleteDialog = false }
-                ) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
             }
         )
     }
@@ -76,33 +70,36 @@ fun ChatHistoryDrawerItem(
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color.White
+                    color = cs.onSurface
                 )
                 Text(
                     text = chat.aiResponse.take(80) + if (chat.aiResponse.length > 80) "..." else "",
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color(0xFFD1D5DB),
+                    color = cs.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
                     text = formatDate(chat.timestamp),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF9CA3AF),
+                    color = cs.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
         },
         selected = false,
         onClick = { onChatSelected() },
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .fillMaxWidth(),
         colors = NavigationDrawerItemDefaults.colors(
-            unselectedContainerColor = Color.Transparent,
-            unselectedTextColor = Color.White,
-            unselectedIconColor = Color(0xFFD1D5DB)
+            unselectedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+            unselectedTextColor = cs.onSurface,
+            unselectedIconColor = cs.onSurfaceVariant,
+            selectedContainerColor = cs.surfaceVariant,
+            selectedTextColor = cs.onSurface,
+            selectedIconColor = cs.onSurfaceVariant
         ),
         badge = {
             IconButton(
@@ -112,7 +109,7 @@ fun ChatHistoryDrawerItem(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Excluir conversa",
-                    tint = Color(0xFFEF4444),
+                    tint = cs.error,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -126,8 +123,6 @@ fun formatDate(timestamp: Long): String {
     return format.format(date)
 }
 
-
-
 @Preview(showBackground = true)
 @Composable
 fun PreviewChatHistoryItem() {
@@ -138,8 +133,7 @@ fun PreviewChatHistoryItem() {
             timestamp = System.currentTimeMillis()
         ),
         onChatSelected = {},
-        onChatDeleted = { },
-        modifier = Modifier
+        onChatDeleted = { }
     )
 }
 
@@ -148,12 +142,11 @@ fun PreviewChatHistoryItem() {
 fun PreviewChatHistoryItemLongText() {
     ChatHistoryDrawerItem(
         chat = ChatHistoryItem(
-            userMessage = "Olá, tudo bem?",
-            aiResponse = "Olá! Como posso ajudar você hoje?",
+            userMessage = "Pergunta longa de teste para verificar overflow do título",
+            aiResponse = "Resposta longa de teste para verificar overflow, preview e comportamento de elipse quando o texto excede duas linhas no layout do item.",
             timestamp = System.currentTimeMillis()
         ),
         onChatSelected = {},
-        onChatDeleted = { },
-        modifier = Modifier
+        onChatDeleted = { }
     )
 }

@@ -1,8 +1,10 @@
 ﻿package com.example.learneverythingbot.presentation.screen
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,11 +17,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,8 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import com.example.learneverythingbot.components.ChatHistoryDrawer
 import com.example.learneverythingbot.domain.model.ChatHistoryItem
@@ -54,7 +57,7 @@ fun TopicScreen(
     topicViewModel: TopicViewModel = hiltViewModel()
 ) {
     val chatHistory by topicViewModel.topicHistoryDrawerUiState.collectAsState()
-    val chatScreenUiState by topicViewModel.topicScreenUiState.collectAsState()
+    val topicScreenUiState by topicViewModel.topicScreenUiState.collectAsState()
     val drawerVisible by topicViewModel.drawerVisible.collectAsState()
     val parsedTopics by topicViewModel.parsedTopics.collectAsState()
 
@@ -62,9 +65,23 @@ fun TopicScreen(
         rememberDrawerState(if (drawerVisible) DrawerValue.Open else DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
+    val lastClickedItem = remember { mutableStateOf<TopicItem?>(null) }
+
+
+    LaunchedEffect(lastClickedItem.value) {
+        val item = lastClickedItem.value ?: return@LaunchedEffect
+        if (parsedTopics.isNotEmpty()) {
+            val s = (topicScreenUiState.chat.subject)
+            val t = (item.title)
+            println("Alannnn valordes:$s valordeT:$t")
+            navController.navigate("subTopicDetail/$s/$t")
+            lastClickedItem.value = null
+        }
+    }
+
     TopicScreenContent(
         navController = navController,
-        topicScreenUiState = chatScreenUiState,
+        topicScreenUiState = topicScreenUiState,
         parsedTopics = parsedTopics,
         drawerState = drawerState,
         topicHistory = chatHistory,
@@ -77,7 +94,10 @@ fun TopicScreen(
         onDeleteTopic = { topicViewModel.deleteChat(it) },
         onDeleteAllTopic = { topicViewModel.deleteAllChat() },
         onGetGptResponse = { topicViewModel.getGptResponse(it) },
+        onChangeLastItemClicked = { lastClickedItem.value = it },
     )
+
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,6 +116,7 @@ private fun TopicScreenContent(
     onDeleteTopic: (String) -> Unit,
     onDeleteAllTopic: () -> Unit,
     onGetGptResponse: (String) -> Unit,
+    onChangeLastItemClicked: (TopicItem?) -> Unit,
 ) {
     var currentSubject: String by remember { mutableStateOf("") }
     var isGenericSubject: Boolean by remember {
@@ -124,18 +145,28 @@ private fun TopicScreenContent(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        scrimColor = MaterialTheme.colorScheme.scrim,
         drawerContent = {
-            ChatHistoryDrawer(
-                allChats = topicHistory.topicChatHistoryItems,
-                onChatSelected = { selected ->
-                    onHideDrawer()
-                    coroutineScope.launch { drawerState.close() }
-                    currentSubject = selected.userMessage
-                    onDrawerItemSelected.invoke(selected)
-                },
-                onChatDeleted = { onDeleteTopic(it.userMessage) },
-                onClearAll = { onDeleteAllTopic() }
-            )
+            ModalDrawerSheet(
+                drawerContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                drawerContentColor = MaterialTheme.colorScheme.onSurface,
+                drawerTonalElevation = 0.dp
+            ) {
+                ChatHistoryDrawer(
+                    allChats = topicHistory.topicChatHistoryItems,
+                    onChatSelected = { selected ->
+                        onHideDrawer()
+                        coroutineScope.launch { drawerState.close() }
+                        currentSubject = selected.userMessage
+                        onDrawerItemSelected.invoke(selected)
+                    },
+                    onChatDeleted = { onDeleteTopic(it.userMessage) },
+                    onClearAll = { onDeleteAllTopic() },
+                    onStartQuiz = {
+                        navController.navigate("quizScreen/${it.userMessage}")
+                    }
+                )
+            }
         }
     ) {
         Scaffold(
@@ -144,6 +175,12 @@ private fun TopicScreenContent(
                     title = {
                         Text(if (isGenericSubject) "Learn Everything Bot" else "Assunto: ${currentSubject.trim()}")
                     },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     navigationIcon = {
                         IconButton(onClick = {
                             onShowDrawer()
@@ -151,7 +188,7 @@ private fun TopicScreenContent(
                         }) {
                             Icon(Icons.Default.Menu, contentDescription = "Abrir Menu")
                         }
-                    }
+                    },
                 )
             },
             bottomBar = {
@@ -187,7 +224,7 @@ private fun TopicScreenContent(
                                 .padding(horizontal = 12.dp, vertical = 16.dp),
                             topics = parsedTopics,
                             onClick = {
-                                navController.navigate("subTopicDetail/${topicScreenUiState.chat.subject}/${it.title}")
+                                onChangeLastItemClicked.invoke(it)
                             }
                         )
                     }
@@ -291,6 +328,7 @@ fun ChatScreenPreviewWithMessages() {
             onDeleteTopic = {},
             onDeleteAllTopic = {},
             onGetGptResponse = {},
+            onChangeLastItemClicked = {}
         )
     }
 }

@@ -2,6 +2,7 @@
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.example.learneverythingbot.domain.model.QuizQuestion
 import com.example.learneverythingbot.domain.model.SubTopics
 
 // utils/SubTopicParser.kt
@@ -36,6 +37,43 @@ object SubTopicParser {
         }
 
         return subTopics
+    }
+
+    suspend fun parseQuizQuestionsFromAiResponse(response: String): List<QuizQuestion> {
+        val questionBlocks = response.split(Regex("(?=Pergunta \\d+:)"))
+        val questions = mutableListOf<QuizQuestion>()
+
+        for ((index, block) in questionBlocks.withIndex()) {
+            val lines = block.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+            val answerIndex = lines.indexOfLast { it.lowercase().startsWith("resposta:") }
+            if (answerIndex < 6) continue
+
+            val enunciadoRaw = lines.getOrNull(0)
+                ?.replace(Regex("^Pergunta \\d+:\\s*"), "")
+                ?.trim()
+                ?: continue
+
+            val alternativas = lines.subList(1, answerIndex).joinToString("\n")
+            val stem = "$enunciadoRaw\n$alternativas".trim()
+
+            val rightAnswer = lines[answerIndex]
+                .substringAfter(":")
+                .trim()
+                .lowercase()
+                .takeIf { it in listOf("a", "b", "c", "d", "e") }
+                ?: continue
+
+            questions.add(
+                QuizQuestion(
+                    stem = stem,
+                    level = index, // nível de dificuldade com base na ordem
+                    rightAnswer = rightAnswer
+                )
+            )
+        }
+
+        return questions
     }
 
     private fun calculateLevel(line: String): Int {

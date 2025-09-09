@@ -6,9 +6,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,21 +20,16 @@ fun ChatHistoryDrawer(
     onChatSelected: (ChatHistoryItem) -> Unit,
     onChatDeleted: (ChatHistoryItem) -> Unit,
     onClearAll: () -> Unit,
+    onStartQuiz: (ChatHistoryItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-    val primaryColor = Color(0xFF10B981)
-    val surfaceColor = Color(0xFFFFFFFF)
-    val onSurfaceColor = Color(0xFF0F172A)
-    val onSurfaceVariantColor = Color(0xFF374151)
-    val outlineColor = Color(0xFFE5E7EB)
-    val errorColor = Color(0xFFEF4444)
+    val cs = MaterialTheme.colorScheme
 
     ModalDrawerSheet(
         modifier = modifier.width(400.dp),
-        drawerContainerColor = onSurfaceColor,
-        drawerContentColor = surfaceColor,
-        drawerTonalElevation = 16.dp
+        drawerContainerColor = cs.surface,
+        drawerContentColor = cs.onSurface,
+        drawerTonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier
@@ -43,14 +38,12 @@ fun ChatHistoryDrawer(
         ) {
             Text(
                 text = "Histórico de Conversas",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = surfaceColor
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = cs.onSurface
             )
 
             Divider(
-                color = outlineColor,
+                color = cs.outlineVariant,
                 thickness = 1.dp,
                 modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, end = 16.dp)
             )
@@ -59,7 +52,7 @@ fun ChatHistoryDrawer(
                 Text(
                     text = "Nenhuma conversa salva",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = onSurfaceVariantColor,
+                    color = cs.onSurfaceVariant,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 32.dp),
@@ -71,17 +64,49 @@ fun ChatHistoryDrawer(
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     items(allChats) { chat ->
-                        ChatHistoryDrawerItem(
-                            chat = chat,
-                            onChatSelected = { onChatSelected(chat) },
-                            onChatDeleted = { onChatDeleted(chat) }
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TextButton(
+                                onClick = { onChatSelected(chat) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = cs.onSurface
+                                )
+                            ) {
+                                Text(
+                                    text = chat.userMessage,
+                                    maxLines = 1
+                                )
+                            }
+
+                            TextButton(
+                                onClick = { onStartQuiz(chat) },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = cs.primary
+                                )
+                            ) {
+                                Text("Quiz")
+                            }
+
+                            TextButton(
+                                onClick = { onChatDeleted(chat) },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = cs.error
+                                )
+                            ) {
+                                Text("Excluir")
+                            }
+                        }
                     }
                 }
             }
 
             Divider(
-                color = outlineColor,
+                color = cs.outlineVariant,
                 thickness = 1.dp,
                 modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, end = 16.dp)
             )
@@ -91,26 +116,28 @@ fun ChatHistoryDrawer(
                     Text(
                         text = "Limpar histórico",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = errorColor
+                        color = cs.error
                     )
                 },
                 icon = {
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = "Limpar histórico",
-                        tint = errorColor
+                        tint = cs.error
                     )
                 },
                 selected = false,
                 onClick = onClearAll,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 colors = NavigationDrawerItemDefaults.colors(
-                    unselectedContainerColor = Color.Transparent,
-                    unselectedTextColor = errorColor,
-                    unselectedIconColor = errorColor
+                    unselectedContainerColor = cs.surface,
+                    unselectedTextColor = cs.error,
+                    unselectedIconColor = cs.error,
+                    selectedContainerColor = cs.surfaceVariant,
+                    selectedTextColor = cs.error,
+                    selectedIconColor = cs.error
                 )
             )
         }
     }
 }
-

@@ -5,11 +5,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -21,16 +28,31 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.learneverythingbot.R
-import com.example.learneverythingbot.presentation.screen.components.GetStartedButton
-import com.example.learneverythingbot.utils.components.QuizButton
+import com.example.learneverythingbot.presentation.screen.ui.theme.LearnEverythingBotTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IntroScreen(navController: NavHostController) {
-    Box(modifier = Modifier.padding()) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier.height(52.dp), // altura menor que o padrão (56.dp)
+                windowInsets = WindowInsets(0.dp) // remove insets extras
+            )
+        }
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0F172A)),
+                .padding(innerPadding) // <<< importante
+                .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -45,27 +67,14 @@ fun IntroScreen(navController: NavHostController) {
             }
         }
     }
-
 }
 
 @Composable
 fun IntroImagen() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // Si tienes una imagen de letras, asegúrate de que se llame letras_intro.webp
-        // Si no la tienes, comenta o elimina esta parte
-        /*
-        Image(
-            painter = painterResource(id = R.drawable.letras_intro),
-            contentDescription = "Texto de introducción",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        )
-        */
-
         Image(
             painter = painterResource(id = R.drawable.logo_app),
-            contentDescription = "Logo de la aplicación",
+            contentDescription = null,
             modifier = Modifier
                 .widthIn(max = 400.dp)
                 .heightIn(max = 400.dp),
@@ -84,7 +93,7 @@ fun WelcomeText(navController: NavController) {
             text = stringResource(id = R.string.Bemvindo),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF10B981),
+            color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center
         )
 
@@ -94,30 +103,48 @@ fun WelcomeText(navController: NavController) {
             text = stringResource(id = R.string.mensaje_de_bienvenida),
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        GetStartedButton(
-            onClickNavigate = {
-                navController.navigate(route = "topicScreen")
-            }
-        )
-        QuizButton(
-            onClickNavigate = {
-                navController.navigate("quizScreen")
-            }
-        )
-
+        Button(
+            onClick = { navController.navigate(route = "topicScreen") },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            )
+        ) {
+            Text(text = stringResource(id = R.string.get_started))
+        }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun IntroScreenPreview() {
-    //IntroScreen()
+    LearnEverythingBotTheme(darkTheme = true) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Passe um NavHostController real no app. No preview omitimos a navegação.
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(16.dp)
+            ) {
+                IntroImagen()
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = stringResource(id = R.string.Bemvindo),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
 }

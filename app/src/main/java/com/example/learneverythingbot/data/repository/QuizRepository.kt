@@ -1,5 +1,7 @@
 ﻿package com.example.learneverythingbot.data.repository
 
+/*
+
 import com.example.learneverythingbot.presentation.screen.Question
 import com.example.learneverythingbot.presentation.screen.Topic
 import kotlinx.coroutines.delay
@@ -43,4 +45,4 @@ class QuizRepository {
             )
         }.take(topic.questionCount)
     }
-}
+}*/

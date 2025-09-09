@@ -100,7 +100,8 @@ fun ChatScreen(
                 },
                 onClearAll = {
                     chatViewModel.deleteAllChat()
-                }
+                },
+                onStartQuiz = {navController.navigate("quizScreen/${it.userMessage}")}
             )
         }
     ) {

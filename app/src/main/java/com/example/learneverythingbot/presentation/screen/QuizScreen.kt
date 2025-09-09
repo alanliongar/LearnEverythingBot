@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,8 +27,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,133 +50,198 @@ import androidx.compose.ui.unit.sp
 import com.example.learneverythingbot.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-
-import com.example.learneverythingbot.presentation.quiz.QuizViewModel
+import com.example.learneverythingbot.presentation.QuizViewModel
 import com.example.learneverythingbot.presentation.screen.components.ErrorComponent
 import com.example.learneverythingbot.presentation.screen.components.LoadingComponent
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizScreen(
-    topic: Topic,
+    topic: String,
     navController: NavController,
-    onFinishQuiz: () -> Unit
+    viewModel: QuizViewModel = hiltViewModel<QuizViewModel>()
 ) {
-    val viewModel: QuizViewModel = viewModel()
+    val coroutineScope = rememberCoroutineScope()
+    viewModel.loadQuestions(topic = topic)
     val questions by viewModel.questions.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
-
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var selectedAnswer by remember { mutableStateOf<Int?>(null) }
+
     var score by remember { mutableStateOf(0) }
 
-    // Cargar preguntas al iniciar la pantalla
     LaunchedEffect(topic) {
-        if (questions.isEmpty()) {
-            viewModel.generateQuestions(topic = topic)
-        }
-    }
-
-    // Reiniciar cuando cambia el topic
-    LaunchedEffect(topic) {
+        viewModel.loadQuestions(topic)   // carrega uma vez por tópico
         currentQuestionIndex = 0
         selectedAnswer = null
         score = 0
-        viewModel.clearQuestions()
-        viewModel.generateQuestions(topic)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        when {
-            isLoading -> {
-                LoadingComponent()
+    QuizScreenContent(
+        topic = topic,
+        questions = questions,
+        isLoading = isLoading,
+        error = error,
+        currentQuestionIndex = currentQuestionIndex,
+        onMoveForewardCurrentQuestion = { currentQuestionIndex++ },
+        selectedAnswer = selectedAnswer,
+        onSelectedAnswer = { selectedAnswer = it },
+        onMatchAnswer = { score++ },
+        onFinishQuiz = {
+            viewModel.updateResults(score = score, topic = topic) { res ->
+                coroutineScope.launch {
+                    navController.navigate("resultScreen/${res.topic}/${res.score}/${res.totalQuestions}")
+                }
             }
+        },
+        popBackStack = { navController.popBackStack() }
+    )
+}
 
-            error != null -> {
-                ErrorComponent(
-                    error = error!!,
-                    onRetry = { viewModel.generateQuestions(topic) }
-                )
-            }
 
-            questions.isNotEmpty() -> {
-                // Header con progresso
-                QuizProgressHeader(
-                    currentQuestion = currentQuestionIndex + 1,
-                    totalQuestions = questions.size,
-                    difficulty = topic.difficulty
-                )
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                // Pergunta
-                Text(
-                    text = questions[currentQuestionIndex].text,
-                    color = colorResource(id = R.color.text_on_primary),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 28.sp,
-                    modifier = Modifier.padding(bottom = 32.dp)
-                )
-
-                // Opções de resposta
-                questions[currentQuestionIndex].options.forEachIndexed { index, option ->
-                    AnswerOption(
-                        option = option,
-                        index = index,
-                        isSelected = selectedAnswer == index,
-                        onClick = {
-                            if (selectedAnswer == null) {
-                                selectedAnswer = index
-                                if (index == questions[currentQuestionIndex].correctAnswer) {
-                                    score++
-                                }
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuizScreenContent(
+    topic: String,
+    questions: List<Question>,
+    isLoading: Boolean,
+    error: Boolean?,
+    currentQuestionIndex: Int,
+    onMoveForewardCurrentQuestion: () -> Unit,
+    selectedAnswer: Int?,
+    onSelectedAnswer: (Int?) -> Unit,
+    onMatchAnswer: () -> Unit,
+    onFinishQuiz: () -> Unit,
+    popBackStack: () -> Unit,
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier.height(52.dp), // altura menor que o padrão (56.dp)
+                windowInsets = WindowInsets(0.dp) // remove insets extras
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when {
+                isLoading -> {
+                    LoadingComponent()
                 }
 
-                // Botão de próximo
-                if (selectedAnswer != null) {
+                error == true -> {
+                    ErrorComponent(
+                        error = "Something went wrong!",
+                        onRetry = {
+                            popBackStack.invoke()
+                        }
+                    )
+                }
+
+                questions.isNotEmpty() -> {
+                    // Header con progresso
+                    QuizProgressHeader(
+                        currentQuestion = currentQuestionIndex,
+                        totalQuestions = questions.size,
+                        difficulty = when (questions[currentQuestionIndex].dificulty) {
+                            1 -> "Fácil"
+                            2 -> "Médio"
+                            3 -> "Difícil"
+                            else -> "Tanto faz"
+                        }
+                    )
+
                     Spacer(modifier = Modifier.height(28.dp))
-                    Button(
-                        onClick = {
-                            if (currentQuestionIndex + 1 < questions.size) {
-                                currentQuestionIndex++
-                                selectedAnswer = null
-                            } else {
-                                onFinishQuiz()
+
+                    // Pergunta
+                    Text(
+                        text = questions[currentQuestionIndex].text,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 28.sp,
+                        modifier = Modifier.padding(bottom = 32.dp)
+                    )
+
+                    // Opções de resposta
+                    questions[currentQuestionIndex].options.forEachIndexed { index, option ->
+                        AnswerOption(
+                            option = option,
+                            index = index,
+                            isSelected = selectedAnswer == index,
+                            onClick = {
+                                // permite trocar e "desselecionar"
+                                val next = if (selectedAnswer == index) null else index
+                                onSelectedAnswer(next)
+                                /*if (next != null && selectedAnswer == null &&
+                                    next == questions[currentQuestionIndex].correctAnswer
+                                ) {
+                                    onMatchAnswer()
+                                }*/
                             }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(id = R.color.secondary),
-                            contentColor = colorResource(id = R.color.text_on_secondary)
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Text(
-                            text = if (currentQuestionIndex + 1 < questions.size) "Próxima Pergunta" else "Ver Resultados",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+
+                    // Botão de próximo
+                    if (selectedAnswer != null) {
+                        Spacer(modifier = Modifier.height(28.dp))
+                        Button(
+                            onClick = {
+                                val chosenIndex = selectedAnswer
+
+                                // verifica se bate com o índice da resposta correta
+                                if (chosenIndex != null &&
+                                    chosenIndex == questions[currentQuestionIndex].correctAnswer
+                                ) {
+                                    onMatchAnswer() // soma ponto
+                                }
+                                if (currentQuestionIndex + 1 < questions.size) {
+                                    onMoveForewardCurrentQuestion.invoke()
+                                    onSelectedAnswer.invoke(null)
+                                } else {
+                                    onFinishQuiz.invoke()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                                contentColor = MaterialTheme.colorScheme.onSecondary
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Text(
+                                text = if (currentQuestionIndex + 1 < questions.size) "Próxima Pergunta" else "Ver Resultados",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
                 }
             }
         }
     }
+
 }
 
 @Composable
@@ -191,7 +261,7 @@ fun TopicSelectionScreen(onTopicSelected: (Topic) -> Unit) {
     ) {
         Text(
             text = "Escolha um tópico para praticar",
-            color = colorResource(id = R.color.text_on_primary),
+            color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -199,7 +269,7 @@ fun TopicSelectionScreen(onTopicSelected: (Topic) -> Unit) {
 
         Text(
             text = "Teste seus conhecimentos e aprenda de forma divertida",
-            color = colorResource(id = R.color.text_secondary),
+            color = MaterialTheme.colorScheme.secondary,
             fontSize = 16.sp,
             modifier = Modifier.padding(bottom = 32.dp)
         )
@@ -218,7 +288,7 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = colorResource(id = R.color.surface_dark)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(20.dp)
@@ -233,7 +303,7 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(56.dp)
                     .background(
-                        color = colorResource(id = R.color.secondary).copy(alpha = 0.2f),
+                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
                         shape = CircleShape
                     )
                     .padding(12.dp),
@@ -242,7 +312,7 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
-                    tint = colorResource(id = R.color.secondary),
+                    tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -252,7 +322,7 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = topic.name,
-                    color = colorResource(id = R.color.text_on_primary),
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -261,7 +331,7 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
 
                 Text(
                     text = topic.description,
-                    color = colorResource(id = R.color.text_secondary),
+                    color = MaterialTheme.colorScheme.secondary,
                     fontSize = 14.sp,
                     maxLines = 2
                 )
@@ -275,9 +345,9 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
                             .clip(RoundedCornerShape(8.dp))
                             .background(
                                 color = when (topic.difficulty) {
-                                    "Fácil" -> colorResource(id = R.color.success).copy(alpha = 0.2f)
-                                    "Médio" -> colorResource(id = R.color.warning).copy(alpha = 0.2f)
-                                    else -> colorResource(id = R.color.error).copy(alpha = 0.2f)
+                                    "Fácil" -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
+                                    "Médio" -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                                    else -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
                                 }
                             )
                             .padding(horizontal = 12.dp, vertical = 6.dp)
@@ -285,9 +355,9 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
                         Text(
                             text = topic.difficulty,
                             color = when (topic.difficulty) {
-                                "Fácil" -> colorResource(id = R.color.success)
-                                "Médio" -> colorResource(id = R.color.warning)
-                                else -> colorResource(id = R.color.error)
+                                "Fácil" -> MaterialTheme.colorScheme.tertiary
+                                "Médio" -> MaterialTheme.colorScheme.surfaceVariant
+                                else -> MaterialTheme.colorScheme.error
                             },
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
@@ -299,110 +369,10 @@ fun TopicCard(topic: Topic, onClick: () -> Unit) {
                     // Contagem de perguntas
                     Text(
                         text = "${topic.questionCount} perguntas",
-                        color = colorResource(id = R.color.text_secondary),
+                        color = MaterialTheme.colorScheme.secondary,
                         fontSize = 12.sp
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun QuestionScreen(topic: Topic, onFinishQuiz: () -> Unit) {
-    var currentQuestion by remember { mutableStateOf(0) }
-    var selectedAnswer by remember { mutableStateOf<Int?>(null) }
-    var score by remember { mutableStateOf(0) }
-
-    val questions = listOf(
-        Question(
-            "1",
-            "Qual é a capital de Portugal?",
-            listOf("Madrid", "Lisboa", "Paris", "Roma"),
-            1
-        ),
-        Question(
-            "2",
-            "Quanto é 8 × 7?",
-            listOf("54", "56", "64", "72"),
-            1
-        ),
-        Question(
-            "3",
-            "Qual linguagem é usada para desenvolvimento Android?",
-            listOf("Python", "Java", "Kotlin", "C#"),
-            2
-        )
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        // Header com progresso
-        QuizProgressHeader(
-            currentQuestion = currentQuestion + 1,
-            totalQuestions = questions.size,
-            difficulty = topic.difficulty
-        )
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        // Pergunta
-        Text(
-            text = questions[currentQuestion].text,
-            color = colorResource(id = R.color.text_on_primary),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 28.sp,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        // Opções de resposta
-        questions[currentQuestion].options.forEachIndexed { index, option ->
-            AnswerOption(
-                option = option,
-                index = index,
-                isSelected = selectedAnswer == index,
-                onClick = {
-                    if (selectedAnswer == null) {
-                        selectedAnswer = index
-                        if (index == questions[currentQuestion].correctAnswer) {
-                            score++
-                        }
-                    }
-                }
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
-        // Botão de próximo
-        if (selectedAnswer != null) {
-            Spacer(modifier = Modifier.height(28.dp))
-            Button(
-                onClick = {
-                    if (currentQuestion + 1 < questions.size) {
-                        currentQuestion++
-                        selectedAnswer = null
-                    } else {
-                        onFinishQuiz()
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.secondary),
-                    contentColor = colorResource(id = R.color.text_on_secondary)
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    text = if (currentQuestion + 1 < questions.size) "Próxima Pergunta" else "Ver Resultados",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
             }
         }
     }
@@ -419,7 +389,7 @@ fun QuizProgressHeader(currentQuestion: Int, totalQuestions: Int, difficulty: St
         ) {
             Text(
                 text = "Pergunta $currentQuestion/$totalQuestions",
-                color = colorResource(id = R.color.text_secondary),
+                color = MaterialTheme.colorScheme.secondary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -429,9 +399,9 @@ fun QuizProgressHeader(currentQuestion: Int, totalQuestions: Int, difficulty: St
                     .clip(RoundedCornerShape(8.dp))
                     .background(
                         color = when (difficulty) {
-                            "Fácil" -> colorResource(id = R.color.success).copy(alpha = 0.2f)
-                            "Médio" -> colorResource(id = R.color.warning).copy(alpha = 0.2f)
-                            else -> colorResource(id = R.color.error).copy(alpha = 0.2f)
+                            "Fácil" -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
+                            "Médio" -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                            else -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
                         }
                     )
                     .padding(horizontal = 12.dp, vertical = 6.dp)
@@ -439,9 +409,9 @@ fun QuizProgressHeader(currentQuestion: Int, totalQuestions: Int, difficulty: St
                 Text(
                     text = difficulty,
                     color = when (difficulty) {
-                        "Fácil" -> colorResource(id = R.color.success)
-                        "Médio" -> colorResource(id = R.color.warning)
-                        else -> colorResource(id = R.color.error)
+                        "Fácil" -> MaterialTheme.colorScheme.tertiary
+                        "Médio" -> MaterialTheme.colorScheme.surfaceVariant
+                        else -> MaterialTheme.colorScheme.error
                     },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -454,8 +424,9 @@ fun QuizProgressHeader(currentQuestion: Int, totalQuestions: Int, difficulty: St
         // Barra de progresso
         LinearProgressIndicator(
             progress = { currentQuestion.toFloat() / totalQuestions.toFloat() },
-            color = colorResource(id = R.color.primary),
-            trackColor = colorResource(id = R.color.surface_dark),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.surface,
+
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)
@@ -467,22 +438,23 @@ fun QuizProgressHeader(currentQuestion: Int, totalQuestions: Int, difficulty: St
 @Composable
 fun AnswerOption(option: String, index: Int, isSelected: Boolean, onClick: () -> Unit) {
     val backgroundColor = if (isSelected) {
-        colorResource(id = R.color.secondary)
+        MaterialTheme.colorScheme.secondary
     } else {
-        colorResource(id = R.color.surface_dark)
+        MaterialTheme.colorScheme.surface
     }
 
     val textColor = if (isSelected) {
-        colorResource(id = R.color.text_on_secondary)
+        MaterialTheme.colorScheme.onSecondary
     } else {
-        colorResource(id = R.color.text_on_primary)
+        MaterialTheme.colorScheme.onSurface
     }
 
     val borderColor = if (isSelected) {
-        colorResource(id = R.color.secondary)
+        MaterialTheme.colorScheme.secondary
     } else {
-        colorResource(id = R.color.border_dark)
+        MaterialTheme.colorScheme.outline
     }
+
 
     Card(
         onClick = onClick,
@@ -505,9 +477,9 @@ fun AnswerOption(option: String, index: Int, isSelected: Boolean, onClick: () ->
                     .size(40.dp)
                     .background(
                         color = if (isSelected) {
-                            colorResource(id = R.color.text_on_secondary)
+                            MaterialTheme.colorScheme.onSecondary
                         } else {
-                            colorResource(id = R.color.primary).copy(alpha = 0.1f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         },
                         shape = CircleShape
                     ),
@@ -516,9 +488,9 @@ fun AnswerOption(option: String, index: Int, isSelected: Boolean, onClick: () ->
                 Text(
                     text = "${'A' + index}",
                     color = if (isSelected) {
-                        colorResource(id = R.color.secondary)
+                        MaterialTheme.colorScheme.secondary
                     } else {
-                        colorResource(id = R.color.primary)
+                        MaterialTheme.colorScheme.primary
                     },
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
@@ -541,7 +513,7 @@ fun AnswerOption(option: String, index: Int, isSelected: Boolean, onClick: () ->
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Selecionado",
-                    tint = colorResource(id = R.color.text_on_secondary),
+                    tint = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -549,122 +521,133 @@ fun AnswerOption(option: String, index: Int, isSelected: Boolean, onClick: () ->
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ResultsScreen(onRetry: () -> Unit, onNewTopic: () -> Unit) {
-    var score by remember { mutableStateOf(8) } // Exemplo: 8/10 acertos
-    val totalQuestions = 10
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // Medalha/Ícone de resultado
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .background(
-                    color = colorResource(id = R.color.primary).copy(alpha = 0.1f),
-                    shape = CircleShape
+fun ResultsScreen(
+    score: Int,
+    totalQuestions: Int,
+    navController: NavController,
+    onRetry: () -> Unit,
+    onNewTopic: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Resultado",
-                tint = colorResource(id = R.color.primary),
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.height(52.dp), // altura menor que o padrão (56.dp)
+                windowInsets = WindowInsets(0.dp) // remove insets extras
             )
         }
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        // Título baseado no desempenho
-        Text(
-            text = if (score >= totalQuestions * 0.7) "Excelente! 🎉" else "Bom trabalho! 💪",
-            color = colorResource(id = R.color.text_on_primary),
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Pontuação
-        Text(
-            text = "$score/$totalQuestions",
-            color = colorResource(id = R.color.primary),
-            fontSize = 32.sp,
-            fontWeight = FontWeight.ExtraBold
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Percentual
-        Text(
-            text = "${(score * 100 / totalQuestions)}% de acerto",
-            color = colorResource(id = R.color.text_secondary),
-            fontSize = 16.sp
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Mensagem de feedback
-        Text(
-            text = if (score >= totalQuestions * 0.7) {
-                "Você dominou este tópico! Continue assim!"
-            } else {
-                "Continue praticando para melhorar seu desempenho!"
-            },
-            color = colorResource(id = R.color.text_secondary),
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 24.dp)
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Botões de ação
+    ) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Button(
-                onClick = onRetry,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.secondary),
-                    contentColor = colorResource(id = R.color.text_on_secondary)
-                ),
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp)
+                    .size(120.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Tentar Novamente",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Resultado",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(48.dp)
                 )
             }
 
-            Button(
-                onClick = onNewTopic,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.surface_dark),
-                    contentColor = colorResource(id = R.color.text_on_primary)
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp)
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Text(
+                text = if (score >= totalQuestions * 0.7) "Excelente! 🎉" else "Bom trabalho! 💪",
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "$score/$totalQuestions",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val percent = if (totalQuestions == 0) 0 else (score * 100 / totalQuestions)
+            Text(
+                text = "${percent}% de acerto",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 16.sp
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = if (score >= totalQuestions * 0.7) {
+                    "Você dominou este tópico! Continue assim!"
+                } else {
+                    "Continue praticando para melhorar seu desempenho!"
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "Escolher Outro Tópico",
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp
-                )
+                Button(
+                    onClick = onRetry,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "Tentar Novamente",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = onNewTopic,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "Escolher Outro Tópico",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp
+                    )
+                }
             }
         }
     }
@@ -682,6 +665,7 @@ data class Topic(
 data class Question(
     val id: String,
     val text: String,
+    val dificulty: Int,
     val options: List<String>,
     val correctAnswer: Int
 )
@@ -694,7 +678,7 @@ data class Question(
 fun TopicSelectionPreview() {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = colorResource(id = R.color.background_dark)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -703,7 +687,7 @@ fun TopicSelectionPreview() {
         ) {
             Text(
                 text = "Escolha um tópico para praticar",
-                color = colorResource(id = R.color.text_on_primary),
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -711,7 +695,7 @@ fun TopicSelectionPreview() {
 
             Text(
                 text = "Teste seus conhecimentos e aprenda de forma divertida",
-                color = colorResource(id = R.color.text_secondary),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
@@ -749,7 +733,7 @@ fun TopicSelectionPreview() {
 fun QuestionScreenPreview() {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = colorResource(id = R.color.background_dark)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -768,7 +752,7 @@ fun QuestionScreenPreview() {
             // Pergunta
             Text(
                 text = "Qual linguagem é oficial para desenvolvimento Android?",
-                color = colorResource(id = R.color.text_on_primary),
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -815,8 +799,8 @@ fun QuestionScreenPreview() {
             Button(
                 onClick = {},
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.secondary),
-                    contentColor = colorResource(id = R.color.text_on_secondary)
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -838,7 +822,7 @@ fun QuestionScreenPreview() {
 fun ResultsScreenSuccessPreview() {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = colorResource(id = R.color.background_dark)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -852,7 +836,7 @@ fun ResultsScreenSuccessPreview() {
                 modifier = Modifier
                     .size(120.dp)
                     .background(
-                        color = colorResource(id = R.color.primary).copy(alpha = 0.1f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -860,7 +844,7 @@ fun ResultsScreenSuccessPreview() {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Resultado",
-                    tint = colorResource(id = R.color.primary),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(48.dp)
                 )
             }
@@ -869,7 +853,7 @@ fun ResultsScreenSuccessPreview() {
 
             Text(
                 text = "Excelente! 🎉",
-                color = colorResource(id = R.color.text_on_primary),
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -878,7 +862,7 @@ fun ResultsScreenSuccessPreview() {
 
             Text(
                 text = "9/10",
-                color = colorResource(id = R.color.primary),
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold
             )
@@ -887,7 +871,7 @@ fun ResultsScreenSuccessPreview() {
 
             Text(
                 text = "90% de acerto",
-                color = colorResource(id = R.color.text_secondary),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp
             )
 
@@ -895,7 +879,7 @@ fun ResultsScreenSuccessPreview() {
 
             Text(
                 text = "Você dominou este tópico! Continue assim!",
-                color = colorResource(id = R.color.text_secondary),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center
             )
@@ -909,8 +893,8 @@ fun ResultsScreenSuccessPreview() {
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(id = R.color.secondary),
-                        contentColor = colorResource(id = R.color.text_on_secondary)
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -923,8 +907,8 @@ fun ResultsScreenSuccessPreview() {
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(id = R.color.surface_dark),
-                        contentColor = colorResource(id = R.color.text_on_primary)
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -943,7 +927,7 @@ fun ResultsScreenSuccessPreview() {
 fun ResultsScreenImprovePreview() {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = colorResource(id = R.color.background_dark)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -956,7 +940,7 @@ fun ResultsScreenImprovePreview() {
                 modifier = Modifier
                     .size(120.dp)
                     .background(
-                        color = colorResource(id = R.color.warning).copy(alpha = 0.1f),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -964,7 +948,7 @@ fun ResultsScreenImprovePreview() {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Resultado",
-                    tint = colorResource(id = R.color.warning),
+                    tint = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.size(48.dp)
                 )
             }
@@ -973,7 +957,7 @@ fun ResultsScreenImprovePreview() {
 
             Text(
                 text = "Bom trabalho! 💪",
-                color = colorResource(id = R.color.text_on_primary),
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -982,7 +966,7 @@ fun ResultsScreenImprovePreview() {
 
             Text(
                 text = "6/10",
-                color = colorResource(id = R.color.warning),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold
             )
@@ -991,7 +975,7 @@ fun ResultsScreenImprovePreview() {
 
             Text(
                 text = "60% de acerto",
-                color = colorResource(id = R.color.text_secondary),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp
             )
 
@@ -999,7 +983,7 @@ fun ResultsScreenImprovePreview() {
 
             Text(
                 text = "Continue praticando para melhorar seu desempenho!",
-                color = colorResource(id = R.color.text_secondary),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center
             )
@@ -1013,8 +997,8 @@ fun ResultsScreenImprovePreview() {
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(id = R.color.secondary),
-                        contentColor = colorResource(id = R.color.text_on_secondary)
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1027,8 +1011,8 @@ fun ResultsScreenImprovePreview() {
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(id = R.color.surface_dark),
-                        contentColor = colorResource(id = R.color.text_on_primary)
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1047,7 +1031,7 @@ fun ResultsScreenImprovePreview() {
 fun QuizScreenPreview() {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = colorResource(id = R.color.background_dark)
+        color = MaterialTheme.colorScheme.background
     ) {
         val topic = Topic(
             id = "1",
@@ -1059,9 +1043,8 @@ fun QuizScreenPreview() {
         val navController: NavController
         navController = NavController(context = LocalContext.current)
         QuizScreen(
-            topic = topic,
+            topic = topic.name,
             navController = navController,
-            onFinishQuiz = {}
         )
     }
 }
@@ -1073,7 +1056,7 @@ fun QuizProgressHeaderPreview() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(24.dp),
-        color = colorResource(id = R.color.background_dark)
+        color = MaterialTheme.colorScheme.background
     ) {
         QuizProgressHeader(
             currentQuestion = 3,
@@ -1090,7 +1073,7 @@ fun AnswerOptionPreview() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(24.dp),
-        color = colorResource(id = R.color.background_dark)
+        color = MaterialTheme.colorScheme.background
     ) {
         Column {
             AnswerOption(

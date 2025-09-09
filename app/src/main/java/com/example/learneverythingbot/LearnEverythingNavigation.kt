@@ -8,9 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.learneverythingbot.presentation.screen.ChatHistoryDetailScreen
 import com.example.learneverythingbot.presentation.screen.IntroScreen
 import com.example.learneverythingbot.presentation.screen.QuizScreen
+import com.example.learneverythingbot.presentation.screen.ResultsScreen
 import com.example.learneverythingbot.presentation.screen.SubTopicDetailScreen
 import com.example.learneverythingbot.presentation.screen.Topic
 import com.example.learneverythingbot.presentation.screen.TopicScreen
@@ -24,6 +24,9 @@ fun LearnEverythingNavigation() {
 
         composable(route = "introScreen") {
             IntroScreen(navController = navController)
+        }
+        composable(route = "topicScreen") {
+            TopicScreen(navController = navController)
         }
 
         composable(
@@ -39,23 +42,6 @@ fun LearnEverythingNavigation() {
             ChatScreen(initialSubject = subject, navController = navController)
         }
 
-        composable(
-            route = "chatHistoryDetail?chatId={chatId}",
-            arguments = listOf(
-                navArgument("chatId") {
-                    type = NavType.IntType
-                    defaultValue = ""
-                }
-            )
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
-            println("Navegando para detalhes do chat ID: $chatId")
-            ChatHistoryDetailScreen(
-                chatUsrMsg = chatId,
-                onBackClick = { navController.popBackStack() }
-            )
-        }
-
         composable("subTopicDetail/{topic}/{subTopic}") { backStackEntry ->
             val topic = backStackEntry.arguments?.getString("topic")
             val subTopic = backStackEntry.arguments?.getString("subTopic")
@@ -65,19 +51,47 @@ fun LearnEverythingNavigation() {
                 navController = navController
             )
         }
-
-        composable(route = "topicScreen") {
-            TopicScreen(navController = navController)
-        }
-        composable(route = "quizScreen") {
-            val topic = Topic(
-                id = "1",
-                name = "",
-                description = "",
-                difficulty = "",
-                questionCount = 1
+        composable(
+            route = "quizScreen/{topic}",
+            arguments = listOf(
+                navArgument(name = "topic") {
+                    type = NavType.StringType
+                }
             )
-            QuizScreen(topic = topic, navController = navController, onFinishQuiz = {})
+        ) { backStackEntry ->
+            val topic = backStackEntry.arguments?.getString("topic").orEmpty()
+            println("Alannn + " + topic)
+            QuizScreen(topic = topic, navController = navController)
         }
+
+        composable(
+            route = "resultScreen/{topic}/{score}/{totalQuestions}",
+            arguments = listOf(
+                navArgument("topic") { type = NavType.StringType },
+                navArgument("score") { type = NavType.IntType },
+                navArgument("totalQuestions") { type = NavType.IntType },
+            )
+        ) { backStackEntry ->
+            val topic = backStackEntry.arguments?.getString("topic").orEmpty()
+            val score = backStackEntry.arguments?.getInt("score") ?: 0
+            val total = backStackEntry.arguments?.getInt("totalQuestions") ?: 0
+
+            ResultsScreen(
+                score = score,
+                totalQuestions = total,
+                navController = navController,
+                onRetry = {
+                    navController.navigate("quizScreen/$topic") {
+                        popUpTo("quizScreen/$topic") { inclusive = true }
+                    }
+                },
+                onNewTopic = {
+                    navController.navigate("topicScreen") {
+                        popUpTo("topicScreen") { inclusive = true }
+                    }
+                }
+            )
+        }
+
     }
 }

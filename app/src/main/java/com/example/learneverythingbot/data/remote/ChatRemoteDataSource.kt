@@ -20,22 +20,6 @@ class ChatRemoteDataSource @Inject constructor(
                    2.1 Subtópico C
                    2.2 Subtópico D
             """.trimIndent()
-        /*Quero aprender os conhecimentos de $topic,
-            me devolva um plano de estudos efetivo e simples, organizado
-            em estrutura de pacotes, devolva somente a estrutura de pacotes.
-            Atente-se a essa instrução, pois é importante: você deve devolver especificamente numa estrutura de tópicos.
-            A seguir está um exemplo. Responda **SOMENTE** nesse formato, e somente com o conteúdo direto.
-            Topico/assunto
-            ├── subtopico-nivel1
-            │   ├── subtopico-nivel2
-            │   └── subtopico-nivel2
-            ├── subtopico-nivel1
-            │   ├── subtopico-nivel2
-            │   ├── subtopico-nivel2
-            │   ├── subtopico-nivel2
-            │   ├── subtopico-nivel2
-            │   └── subtopico-nivel2*/
-        //Árvore de diretórios é diferente de estrutura de pacotes, tomar cuidado
 
         val request = OpenAiRequest(
             messages = listOf(
@@ -63,6 +47,57 @@ class ChatRemoteDataSource @Inject constructor(
             Result.failure(Exception("🚨 Unexpected error: ${e.localizedMessage ?: "Unknown error"}"))
         }
     }
+
+    override suspend fun getQuizQuestions(topic: String, subTopic: String, summary: String): Result<String> {
+        val prompt = """
+        Crie 3 questões de múltipla escolha sobre o subtema '$subTopic' dentro do assunto '$topic'.
+        As perguntas devem ser objetivas, de nível introdutório, com 5 alternativas cada (a–e) e apenas uma correta, 
+        a primeira pergunta deve ser de nivel facil, a segunda de nivel medio, a terceira de nivel dificil.
+        Considere o seguinte conteudo que foi gerado anteriormente para as duas primeiras questoes: $summary
+        .
+        
+        Formato da resposta (obrigatório):
+        Pergunta 1:
+        <enunciado>
+        a) <alternativa A>
+        b) <alternativa B>
+        c) <alternativa C>
+        d) <alternativa D>
+        e) <alternativa E>
+        Resposta: <letra correta>
+        
+        Pergunta 2:
+        ...
+        
+        Pergunta 3:
+        ...
+        
+        Não inclua explicações, comentários ou texto fora do padrão acima, lembrando que sao cinco alternativas pra cada questao,
+        sendo elas de a a e.
+        E a resposta deve conter apenas a letra, somente a letra.
+        """.trimIndent()
+
+        val request = OpenAiRequest(
+            messages = listOf(
+                Message("system", "Você é um especialista em criar perguntas inteligentes e diretas."),
+                Message("user", prompt)
+            )
+        )
+
+        return try {
+            val response = openAiService.getLearningTopics(request)
+            if (response.isSuccessful) {
+                val content = response.body()?.choices?.firstOrNull()?.message?.content
+                    ?: "Conteúdo não disponível."
+                Result.success(content)
+            } else {
+                Result.failure(Exception("Erro na requisição do subtópico: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Erro inesperado: ${e.message}"))
+        }
+    }
+
 
     override suspend fun getSubTopicSummary(
         topic: String,

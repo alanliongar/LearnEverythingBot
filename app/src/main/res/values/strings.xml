@@ -11,4 +11,5 @@
     <string name="title_activity_chat">Chat Screen</string>
     <string name="tomar_quiz">Tomar Quiz</string>
     <string name="title_activity_main2">MainActivity2</string>
+    <string name="get_started">Iniciar!</string>
 </resources>

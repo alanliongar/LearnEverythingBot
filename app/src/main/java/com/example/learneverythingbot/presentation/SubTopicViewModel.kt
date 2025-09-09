@@ -32,7 +32,7 @@ class SubTopicViewModel @Inject constructor(
                 title = subTopic,
                 level = 0
             )
-            val result = chatRepository.getSecondGptResponse(topic, subTopic)
+            val result = chatRepository.generateSummary(topic, subTopic)
             _isLoading.value = false
             result.onSuccess { content ->
                 _subTopicContent.value = content.secondAiResponse

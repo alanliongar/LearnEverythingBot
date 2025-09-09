@@ -60,7 +60,9 @@ class TopicViewModel @Inject constructor(
     }
 
     fun deleteChat(userMessage: String) {
-
+        viewModelScope.launch(dispatcher) {
+            repository.deleteChat(userMessage = userMessage)
+        }
     }
 
     fun deleteAllChat() {
@@ -71,6 +73,13 @@ class TopicViewModel @Inject constructor(
 
     fun parseHistoryItem(chatHistoryItem: ChatHistoryItem) {
         _parsedTopics.value = parseTopics(chatHistoryItem.aiResponse)
+        _topicScreenUiState.value = TopicScreenUiState(
+            chat = Topic(
+                subject = chatHistoryItem.userMessage,
+                aiAnswer = chatHistoryItem.aiResponse,
+                timeStamp = chatHistoryItem.timestamp
+            )
+        )
     }
 
     private fun parseTopics(response: String): List<TopicItem> {
