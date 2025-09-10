@@ -60,7 +60,6 @@ fun LearnEverythingNavigation() {
             )
         ) { backStackEntry ->
             val topic = backStackEntry.arguments?.getString("topic").orEmpty()
-            println("Alannn + " + topic)
             QuizScreen(topic = topic, navController = navController)
         }
 

@@ -56,7 +56,6 @@ class QuizViewModel @Inject constructor(
         viewModelScope.launch(context = dispatcher) {
             _isLoading.value = true
             val quizQuestionsFromDB = repository.getQuizQuestions(topic = topic)
-            println("Alannn + 3 + " + quizQuestionsFromDB.toString())
             if (!quizQuestionsFromDB.isNullOrEmpty()) {
                 _questions.value =
                     convertQuizQuestionListToListOfQuestion(quizQuestionsFromDB)

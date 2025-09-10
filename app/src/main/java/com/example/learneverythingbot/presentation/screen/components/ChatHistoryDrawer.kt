@@ -23,121 +23,112 @@ fun ChatHistoryDrawer(
     onStartQuiz: (ChatHistoryItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val cs = MaterialTheme.colorScheme
-
-    ModalDrawerSheet(
-        modifier = modifier.width(400.dp),
-        drawerContainerColor = cs.surface,
-        drawerContentColor = cs.onSurface,
-        drawerTonalElevation = 0.dp
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 28.dp, top = 24.dp, bottom = 16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 28.dp, top = 24.dp, bottom = 16.dp)
-        ) {
+        Text(
+            text = "Histórico de Conversas",
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Divider(
+            color = MaterialTheme.colorScheme.outlineVariant,
+            thickness = 1.dp,
+            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, end = 16.dp)
+        )
+
+        if (allChats.isEmpty()) {
             Text(
-                text = "Histórico de Conversas",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = cs.onSurface
+                text = "Nenhuma conversa salva",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp),
+                textAlign = TextAlign.Center
             )
-
-            Divider(
-                color = cs.outlineVariant,
-                thickness = 1.dp,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, end = 16.dp)
-            )
-
-            if (allChats.isEmpty()) {
-                Text(
-                    text = "Nenhuma conversa salva",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = cs.onSurfaceVariant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 32.dp),
-                    textAlign = TextAlign.Center
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(allChats) { chat ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(allChats) { chat ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = { onChatSelected(chat) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
                         ) {
-                            TextButton(
-                                onClick = { onChatSelected(chat) },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.textButtonColors(
-                                    contentColor = cs.onSurface
-                                )
-                            ) {
-                                Text(
-                                    text = chat.userMessage,
-                                    maxLines = 1
-                                )
-                            }
+                            Text(
+                                text = chat.userMessage,
+                                maxLines = 1
+                            )
+                        }
 
-                            TextButton(
-                                onClick = { onStartQuiz(chat) },
-                                colors = ButtonDefaults.textButtonColors(
-                                    contentColor = cs.primary
-                                )
-                            ) {
-                                Text("Quiz")
-                            }
+                        TextButton(
+                            onClick = { onStartQuiz(chat) },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text("Quiz")
+                        }
 
-                            TextButton(
-                                onClick = { onChatDeleted(chat) },
-                                colors = ButtonDefaults.textButtonColors(
-                                    contentColor = cs.error
-                                )
-                            ) {
-                                Text("Excluir")
-                            }
+                        TextButton(
+                            onClick = { onChatDeleted(chat) },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Excluir")
                         }
                     }
                 }
             }
-
-            Divider(
-                color = cs.outlineVariant,
-                thickness = 1.dp,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, end = 16.dp)
-            )
-
-            NavigationDrawerItem(
-                label = {
-                    Text(
-                        text = "Limpar histórico",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = cs.error
-                    )
-                },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = "Limpar histórico",
-                        tint = cs.error
-                    )
-                },
-                selected = false,
-                onClick = onClearAll,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                colors = NavigationDrawerItemDefaults.colors(
-                    unselectedContainerColor = cs.surface,
-                    unselectedTextColor = cs.error,
-                    unselectedIconColor = cs.error,
-                    selectedContainerColor = cs.surfaceVariant,
-                    selectedTextColor = cs.error,
-                    selectedIconColor = cs.error
-                )
-            )
         }
+
+        Divider(
+            color = MaterialTheme.colorScheme.outlineVariant,
+            thickness = 1.dp,
+            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, end = 16.dp)
+        )
+
+        NavigationDrawerItem(
+            label = {
+                Text(
+                    text = "Limpar histórico",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
+                )
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Limpar histórico",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            selected = false,
+            onClick = onClearAll,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            colors = NavigationDrawerItemDefaults.colors(
+                unselectedContainerColor = MaterialTheme.colorScheme.surface,
+                unselectedTextColor = MaterialTheme.colorScheme.error,
+                unselectedIconColor = MaterialTheme.colorScheme.error,
+                selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                selectedTextColor = MaterialTheme.colorScheme.error,
+                selectedIconColor = MaterialTheme.colorScheme.error
+            )
+        )
     }
 }

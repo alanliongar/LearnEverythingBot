@@ -50,7 +50,7 @@ fun ChatHistoryDrawerItem(
                         onChatDeleted()
                         showDeleteDialog = false
                     }
-                ) { Text("Excluir", color = cs.error) }
+                ) { Text("Excluir", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") }
@@ -70,20 +70,20 @@ fun ChatHistoryDrawerItem(
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = cs.onSurface
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = chat.aiResponse.take(80) + if (chat.aiResponse.length > 80) "..." else "",
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    color = cs.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
                     text = formatDate(chat.timestamp),
                     style = MaterialTheme.typography.bodySmall,
-                    color = cs.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
@@ -95,11 +95,11 @@ fun ChatHistoryDrawerItem(
             .fillMaxWidth(),
         colors = NavigationDrawerItemDefaults.colors(
             unselectedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-            unselectedTextColor = cs.onSurface,
-            unselectedIconColor = cs.onSurfaceVariant,
-            selectedContainerColor = cs.surfaceVariant,
-            selectedTextColor = cs.onSurface,
-            selectedIconColor = cs.onSurfaceVariant
+            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+            selectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         badge = {
             IconButton(
@@ -109,7 +109,7 @@ fun ChatHistoryDrawerItem(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Excluir conversa",
-                    tint = cs.error,
+                    tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(16.dp)
                 )
             }
