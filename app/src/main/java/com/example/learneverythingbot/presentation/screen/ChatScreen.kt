@@ -179,7 +179,7 @@ fun ChatScreen(
                                                 SubTopicButton(
                                                     subTopic = subTopic,
                                                     onClick = {
-                                                        navController.navigate("subTopicDetail/${currentSubject}/${subTopic.title}") // MUDEI AQUI
+                                                        navController.navigate("subTopicDetail/${currentSubject}/${subTopic.title}")
                                                     }
                                                 )
                                             }

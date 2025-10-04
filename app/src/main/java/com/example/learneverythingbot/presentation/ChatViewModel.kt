@@ -47,27 +47,33 @@ class ChatViewModel @Inject constructor(
     }
 
     fun getGptResponse(topic: String) {
+        val topicUpdated = sanitize(topic)
         viewModelScope.launch(dispatcher) {
             _chatScreenUiState.value = ChatScreenUiState(
                 isLoading = true,
                 error = null
             )
 
-            val result = chatRepository.getGptResponse(topic)
+            val result = chatRepository.getGptResponse(topicUpdated)
 
             if (result.isSuccess) {
                 val chatHistory = result.getOrThrow()
+                val userMessage = sanitizeResponse(chatHistory.userMessage)
+                val updatedChatHistory = chatHistory.copy(
+                    userMessage = userMessage
+                )
+                println("Alannn + " + userMessage)
                 // Insere o chat no banco (isso gerará um ID único)
-                chatRepository.insertChat(chatHistory)
+                chatRepository.insertChat(updatedChatHistory)
 
                 // Recarrega o histórico para ter o ID correto
                 loadChatHistory()
 
                 _chatScreenUiState.value = ChatScreenUiState(
                     chat = Chat(
-                        subject = chatHistory.userMessage,
-                        aiAnswer = chatHistory.aiResponse,
-                        timeStamp = chatHistory.timestamp
+                        subject = updatedChatHistory.userMessage,
+                        aiAnswer = updatedChatHistory.aiResponse,
+                        timeStamp = updatedChatHistory.timestamp
                     ),
                     isLoading = false
                 )
@@ -79,6 +85,7 @@ class ChatViewModel @Inject constructor(
             }
         }
     }
+
 
     fun loadChatHistory() {
         viewModelScope.launch(dispatcher) {
@@ -132,18 +139,6 @@ class ChatViewModel @Inject constructor(
         return line.trim().replace(Regex("^[├└│\\s─]*"), "").trim()
     }
 
-
-    private fun handleGptResponse(response: String, originalTopic: String) {
-        val subTopics = extractSubTopicsFromResponse(response, originalTopic)
-
-        _chatScreenUiState.value = _chatScreenUiState.value.copy(
-            chat = Chat(originalTopic, response),
-            isLoading = false
-        )
-
-
-    }
-
     fun loadChatByUsrMsg(userMessage: String) {
         viewModelScope.launch(dispatcher) {
             _isLoadingChat.value = true
@@ -193,8 +188,33 @@ class ChatViewModel @Inject constructor(
             _currentChat.value = null
         }
     }
+}
 
-    fun clearError() {
-        _chatScreenUiState.value = _chatScreenUiState.value.copy(error = null)
-    }
+private fun sanitize(input: String): String {
+    val forbidden = Regex("""[\\/:*?"<>|`$&;]""")   // banir
+    val invisibles = Regex("""[\u0000\u00A0\u200B-\u200D\uFEFF\u202A-\u202E\u2066-\u2069]""")
+    val smartQuotes = Regex("""[“”‘’]""")
+    val longDashes = Regex("""[–—]""")
+    return input
+        .replace(forbidden, "_")
+        .replace(invisibles, "")
+        .replace(smartQuotes, "\"")
+        .replace(longDashes, "-")
+}
+
+private fun sanitizeResponse(input: String): String {
+    // Mantém quebras de linha e espaços exatamente como vieram.
+    // Remove apenas marcadores invisíveis problemáticos e normaliza pontuações “bonitas”.
+    // Substitui caracteres perigosos por "_".
+    val forbidden = Regex("""[\\/:*?"<>|`$&;]""")
+    val invisiblesExceptSpacesAndNewlines =
+        Regex("""[\u200B-\u200D\uFEFF\u202A-\u202E\u2066-\u2069]""")
+    val smartQuotes = Regex("""[“”‘’]""")
+    val longDashes = Regex("""[–—]""")
+
+    return input
+        .replace(forbidden, "_")
+        .replace(invisiblesExceptSpacesAndNewlines, "")
+        .replace(smartQuotes, "\"")
+        .replace(longDashes, "-")
 }

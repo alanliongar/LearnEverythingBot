@@ -19,6 +19,42 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.util.Locale
 
+fun main() {
+    val str = "Pipeline CI/CD"
+    println(sanitize(str))
+}
+
+private fun sanitize(input: String): String {
+    val forbidden = Regex("""[\\/:*?"<>|`$&;]""")   // banir
+    val invisibles = Regex("""[\u0000\u00A0\u200B-\u200D\uFEFF\u202A-\u202E\u2066-\u2069]""")
+    val smartQuotes = Regex("""[“”‘’]""")
+    val longDashes = Regex("""[–—]""")
+    return input
+        .replace(forbidden, "_")
+        .replace(invisibles, "")
+        .replace(smartQuotes, "\"")
+        .replace(longDashes, "-")
+}
+
+
+private fun sanitizeResponse(input: String): String {
+    // Mantém quebras de linha e espaços exatamente como vieram.
+    // Remove apenas marcadores invisíveis problemáticos e normaliza pontuações “bonitas”.
+    // Substitui caracteres perigosos por "_".
+    val forbidden = Regex("""[\\/:*?"<>|`$&;]""")
+    val invisiblesExceptSpacesAndNewlines =
+        Regex("""[\u200B-\u200D\uFEFF\u202A-\u202E\u2066-\u2069]""")
+    val smartQuotes = Regex("""[“”‘’]""")
+    val longDashes = Regex("""[–—]""")
+
+    return input
+        .replace(forbidden, "_")
+        .replace(invisiblesExceptSpacesAndNewlines, "")
+        .replace(smartQuotes, "\"")
+        .replace(longDashes, "-")
+}
+
+
 @Composable
 fun ColorPreview() {
     val tertiary = MaterialTheme.colorScheme.tertiary
@@ -30,7 +66,9 @@ fun ColorPreview() {
         Log.d("Colors", "SurfaceVariant: " + String.format("#%08X", surfaceVariant.toArgb()))
     }
 
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
+    Column(Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
